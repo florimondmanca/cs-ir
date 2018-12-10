@@ -1,15 +1,17 @@
 import re
 
 with open('data/cacm.all', 'r') as data:
-    content: str = data.read()
+    lines = data.readlines()
+    lines = [l.strip().replace('  ', ' ') for l in lines]
+    content: str = ' '.join(lines)
 
-raw_docs = [doc.replace('\n', ' ') for doc in content.split('.I ')[1:]]
+raw_docs = [doc for doc in content.split('.I ')[1:]]
 
 
-def parse_id(doc: str) -> str:
-    assert doc, 'No doc: ' + doc
+def parse_id(doc: str) -> int:
+    assert doc
     doc_id, *_ = doc.split()
-    return doc_id
+    return int(doc_id)
 
 
 def parse_sections(doc: str) -> dict:
@@ -17,9 +19,20 @@ def parse_sections(doc: str) -> dict:
     tokens.pop(0)
     sections = {}
     for section, section_content in zip(tokens[::2], tokens[1::2]):
-        # TODO parse section content
-        # TODO store by field name instead of raw section ID (W, T, K)
-        sections[section] = section_content
+        section_content = section_content.strip()
+        parse = {
+            'T': lambda s: s,
+            'W': lambda s: s,
+            'K': lambda s: s.split(', '),
+        }.get(section)
+        if parse is None:
+            continue
+        verbose = {
+            'T': 'title',
+            'W': 'summary',
+            'K': 'keywords'
+        }[section]
+        sections[verbose] = parse(section_content)
     return sections
 
 
