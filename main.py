@@ -1,9 +1,14 @@
 import re
+from typing import List, Set
 
 with open('data/cacm.all', 'r') as data:
     lines = data.readlines()
     lines = [l.strip().replace('  ', ' ') for l in lines]
     content: str = ' '.join(lines)
+
+with open('data/common_words.txt', 'r') as f:
+    # Use a set for constant-time lookup
+    stop_words = {l.strip() for l in f}
 
 raw_docs = [doc for doc in content.split('.I ')[1:]]
 
@@ -44,3 +49,36 @@ for doc in raw_docs:
     documents.append({'doc_id': doc_id, **sections})
 
 print(len(documents))
+
+
+def get_tokens(value: str) -> List[str]:
+    """Tokenize words separated by non-alphanumeric characters."""
+    return list(filter(None, re.split('\W+', value)))
+
+
+def remove_stop_words(values):
+    for value in values:
+        if value not in stop_words:
+            yield value
+
+
+def clean(values: List[str]) -> List[str]:
+    return [value.lower() for value in remove_stop_words(values)]
+
+
+def tokenize(document: dict) -> dict:
+    return {
+        'doc_id': document['doc_id'],
+        'title': {
+            'raw': document['title'],
+            'tokens': clean(get_tokens(document['title'])),
+        },
+        'summary': {
+            'raw': document['summary'],
+            'tokens': clean(get_tokens(document['summary'])),
+        },
+        'keywords': {
+            'raw': document['keywords'],
+            'tokens': clean(document['keywords']),
+        },
+    }
