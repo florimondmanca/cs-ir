@@ -1,84 +1,60 @@
-import re
-from typing import List, Set
+from random import shuffle
 
-with open('data/cacm.all', 'r') as data:
-    lines = data.readlines()
-    lines = [l.strip().replace('  ', ' ') for l in lines]
-    content: str = ' '.join(lines)
+import matplotlib.pyplot as plt
 
-with open('data/common_words.txt', 'r') as f:
-    # Use a set for constant-time lookup
-    stop_words = {l.strip() for l in f}
+from documents import parse_collection
+from heaps import estimate, create_heaps
+from metrics import get_num_tokens, get_vocabulary, get_frequencies
+from resources import load_cacm
+from tokens import tokenize
 
-raw_docs = [doc for doc in content.split('.I ')[1:]]
+collection = parse_collection(load_cacm())
+collection = list(map(tokenize, collection))
 
+print('Documents:', len(collection))
 
-def parse_id(doc: str) -> int:
-    assert doc
-    doc_id, *_ = doc.split()
-    return int(doc_id)
+# Q1
+num_tokens = get_num_tokens(collection)
+print('Tokens:', num_tokens)
 
+# Q2
+vocabulary_size = len(get_vocabulary(collection))
+print('Terms (vocabulary size):', vocabulary_size)
 
-def parse_sections(doc: str) -> dict:
-    tokens = re.compile(r'\.(\w) ').split(doc)
-    tokens.pop(0)
-    sections = {}
-    for section, section_content in zip(tokens[::2], tokens[1::2]):
-        section_content = section_content.strip()
-        parse = {
-            'T': lambda s: s,
-            'W': lambda s: s,
-            'K': lambda s: s.split(', '),
-        }.get(section)
-        if parse is None:
-            continue
-        verbose = {
-            'T': 'title',
-            'W': 'summary',
-            'K': 'keywords'
-        }[section]
-        sections[verbose] = parse(section_content)
-    return sections
+# Q3
+# NOTE: how the collection is cut in 2 affects the value of k and b.
+# We compute an average value by shuffling the collection multiple times.
+ks, bs = [], []
+for _ in range(10):
+    shuffle(collection)
+    half_collection = collection[::2]
+    assert len(half_collection) == len(collection) // 2
+    k, b = estimate(
+        m1=vocabulary_size,
+        t1=num_tokens,
+        m2=len(get_vocabulary(half_collection)),
+        t2=get_num_tokens(half_collection),
+    )
+    ks.append(k)
+    bs.append(b)
+k = sum(ks) / len(ks)
+b = sum(bs) / len(bs)
+print('Heaps parameters:', 'k =', int(k), 'b =', round(b, 2))
 
+# Q4
+heaps = create_heaps(k, b)
+print('Vocabulary size for 1 million tokens:', int(heaps(1e6)))
 
-documents = []
+# Q5
+frequencies = get_frequencies(collection)
+freq_desc = sorted(frequencies.items(), key=lambda item: item[1], reverse=True)
+r, f = zip(*freq_desc)
+n_most = 5
+print(
+    n_most, 'most frequent:',
+    ', '.join(f'{ri} ({fi})' for ri, fi in zip(r[:n_most], f[:n_most]))
+)
 
-for doc in raw_docs:
-    doc_id = parse_id(doc)
-    sections = parse_sections(doc)
-    documents.append({'doc_id': doc_id, **sections})
-
-print(len(documents))
-
-
-def get_tokens(value: str) -> List[str]:
-    """Tokenize words separated by non-alphanumeric characters."""
-    return list(filter(None, re.split('\W+', value)))
-
-
-def remove_stop_words(values):
-    for value in values:
-        if value not in stop_words:
-            yield value
-
-
-def clean(values: List[str]) -> List[str]:
-    return [value.lower() for value in remove_stop_words(values)]
-
-
-def tokenize(document: dict) -> dict:
-    return {
-        'doc_id': document['doc_id'],
-        'title': {
-            'raw': document['title'],
-            'tokens': clean(get_tokens(document['title'])),
-        },
-        'summary': {
-            'raw': document['summary'],
-            'tokens': clean(get_tokens(document['summary'])),
-        },
-        'keywords': {
-            'raw': document['keywords'],
-            'tokens': clean(document['keywords']),
-        },
-    }
+plt.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
+# plt.plot(r, f)
+# plt.show()
