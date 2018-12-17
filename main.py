@@ -1,70 +1,64 @@
-from random import shuffle
+from collections import Counter
 
 import matplotlib.pyplot as plt
 
-from documents import parse_collection
 from heaps import estimate, create_heaps
-from metrics import get_num_tokens, get_vocabulary, get_frequencies
-from resources import load_cacm
-from tokens import tokenize
+from tokenizers import CACM, Tokenizer
 
-collection = parse_collection(load_cacm())
-collection = list(map(tokenize, collection))
 
-print('Documents:', len(collection))
+def main(tokenizer: Tokenizer):
+    tokens, doc_ids = zip(*tokenizer)
 
-# Q1
-num_tokens = get_num_tokens(collection)
-print('Tokens:', num_tokens)
+    doc_ids = set(doc_ids)
 
-# Q2
-vocabulary_size = len(get_vocabulary(collection))
-print('Terms (vocabulary size):', vocabulary_size)
+    print("Documents:", len(doc_ids))
 
-# Q3
-# NOTE: how the collection is cut in 2 affects the value of k and b.
-# We compute an average value by shuffling the collection multiple times.
-ks, bs = [], []
-for _ in range(10):
-    shuffle(collection)
-    half_collection = collection[::2]
-    assert len(half_collection) == len(collection) // 2
+    # Q1
+    num_tokens = len(tokens)
+    print("Tokens:", num_tokens)
+
+    # Q2
+    vocabulary_size = len(set(tokens))
+    print("Terms (vocabulary size):", vocabulary_size)
+
+    # Q3
+    half_tokens = tokens[::2]
     k, b = estimate(
         m1=vocabulary_size,
         t1=num_tokens,
-        m2=len(get_vocabulary(half_collection)),
-        t2=get_num_tokens(half_collection),
+        m2=len(set(half_tokens)),
+        t2=len(half_tokens),
     )
-    ks.append(k)
-    bs.append(b)
-k = sum(ks) / len(ks)
-b = sum(bs) / len(bs)
-print('Heaps parameters:', 'k =', int(k), 'b =', round(b, 2))
+    print("Heaps parameters:", "k =", int(k), "b =", round(b, 2))
 
-# Q4
-heaps = create_heaps(k, b)
-print('Vocabulary size for 1 million tokens:', int(heaps(1e6)))
+    # Q4
+    heaps = create_heaps(k, b)
+    print("Estimated vocabulary size for 1 million tokens:", int(heaps(1e6)))
 
-# Q5
-frequencies = get_frequencies(collection)
-t, f = zip(*sorted(frequencies.items(), key=lambda x: x[1], reverse=True))
-r = range(len(f))
-n_most = 5
-print(
-    n_most, 'most frequent:',
-    ', '.join(f'{ti} ({fi})' for ti, fi in zip(t[:n_most], f[:n_most]))
-)
+    # Q5
+    frequencies = Counter(tokens)
+    t, f = zip(*sorted(frequencies.items(), key=lambda x: x[1], reverse=True))
+    r = range(len(f))
+    n_most = 5
+    print(
+        n_most, "most frequent terms:",
+        ", ".join(f"{ti} ({fi})" for ti, fi in zip(t[:n_most], f[:n_most]))
+    )
 
-fig = plt.figure()
+    fig = plt.figure()
 
-ax1 = fig.add_subplot(1, 2, 1)
-ax1.set_xlabel("Rank $r$")
-ax1.set_ylabel("Frequency $f$")
-ax1.plot(r, f)
+    ax1 = fig.add_subplot(1, 2, 1)
+    ax1.set_xlabel("$r$")
+    ax1.set_ylabel("$f$")
+    ax1.plot(r, f)
 
-ax2 = fig.add_subplot(1, 2, 2)
-ax2.set_xlabel("Rank $\log(r)$")
-ax2.set_ylabel("Frequency $\log(f)$")
-ax2.loglog(r, f)
+    ax2 = fig.add_subplot(1, 2, 2)
+    ax2.set_xlabel("$\log(r)$")
+    ax2.set_ylabel("$\log(f)$")
+    ax2.loglog(r, f)
 
-plt.show()
+    plt.show()
+
+
+if __name__ == "__main__":
+    main(CACM("data/cacm.all"))
