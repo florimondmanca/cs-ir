@@ -47,14 +47,24 @@ print('Vocabulary size for 1 million tokens:', int(heaps(1e6)))
 
 # Q5
 frequencies = get_frequencies(collection)
-freq_desc = sorted(frequencies.items(), key=lambda item: item[1], reverse=True)
-r, f = zip(*freq_desc)
+t, f = zip(*sorted(frequencies.items(), key=lambda x: x[1], reverse=True))
+r = range(len(f))
 n_most = 5
 print(
     n_most, 'most frequent:',
-    ', '.join(f'{ri} ({fi})' for ri, fi in zip(r[:n_most], f[:n_most]))
+    ', '.join(f'{ti} ({fi})' for ti, fi in zip(t[:n_most], f[:n_most]))
 )
 
-plt.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
-# plt.plot(r, f)
-# plt.show()
+fig = plt.figure()
+
+ax1 = fig.add_subplot(1, 2, 1)
+ax1.set_xlabel("Rank $r$")
+ax1.set_ylabel("Frequency $f$")
+ax1.plot(r, f)
+
+ax2 = fig.add_subplot(1, 2, 2)
+ax2.set_xlabel("Rank $\log(r)$")
+ax2.set_ylabel("Frequency $\log(f)$")
+ax2.loglog(r, f)
+
+plt.show()
