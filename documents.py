@@ -1,5 +1,36 @@
 import re
-from typing import List
+from typing import List, NamedTuple
+
+
+class Document(NamedTuple):
+    """Represents a document."""
+    doc_id: int
+    title: str
+    summary: str
+    keywords: List[str]
+
+    @property
+    def fields(self):
+        return (field for field in self._fields if field != 'doc_id')
+
+
+class ValueWithTokens(NamedTuple):
+    raw: str
+    tokens: List[str]
+
+
+class DocumentWithTokens(Document):
+    title: ValueWithTokens
+    summary: ValueWithTokens
+    keywords: ValueWithTokens
+
+    @property
+    def fields(self):
+        return (getattr(self, field) for field in super().fields)
+
+
+Collection = List[Document]
+CollectionWithTokens = List[DocumentWithTokens]
 
 
 def parse_id(doc: str) -> int:
@@ -21,20 +52,20 @@ def parse_sections(doc: str) -> dict:
         }.get(section)
         if parse is None:
             continue
-        verbose = {
-            'T': 'title',
-            'W': 'summary',
-            'K': 'keywords'
-        }[section]
-        sections[verbose] = parse(section_content)
+        sections[section] = parse(section_content)
     return sections
 
 
-def parse_document(doc: str) -> dict:
+def parse_document(doc: str) -> Document:
     doc_id = parse_id(doc)
     sections = parse_sections(doc)
-    return {'doc_id': doc_id, **sections}
+    return Document(
+        doc_id=doc_id,
+        title=sections.get('T', ''),
+        summary=sections.get('T', ''),
+        keywords=sections.get('K', []),
+    )
 
 
-def parse_collection(collection: List[str]) -> List[dict]:
-    return [parse_document(doc) for doc in collection]
+def parse_collection(raw_collection: List[str]) -> Collection:
+    return [parse_document(doc) for doc in raw_collection]
