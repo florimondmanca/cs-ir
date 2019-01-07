@@ -3,13 +3,13 @@ from collections import Counter
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
+import tokenizers
 from heaps import estimate, create_heaps
-from tokenizers import Tokenizer, Stanford
 
 load_dotenv()
 
 
-def main(tokenizer: Tokenizer):
+def main(tokenizer: tokenizers.Tokenizer):
     tokens, doc_ids = zip(*tokenizer)
 
     doc_ids = set(doc_ids)
@@ -49,6 +49,10 @@ def main(tokenizer: Tokenizer):
     )
 
     fig = plt.figure()
+    fig.suptitle(
+        "Rank / Frequency plots. "
+        f"Collection: {tokenizer.__class__.__name__}"
+    )
 
     ax1 = fig.add_subplot(1, 2, 1)
     ax1.set_xlabel("$r$")
@@ -64,5 +68,5 @@ def main(tokenizer: Tokenizer):
 
 
 if __name__ == "__main__":
-    collection = Stanford
+    collection = tokenizers.Stanford
     main(collection())
