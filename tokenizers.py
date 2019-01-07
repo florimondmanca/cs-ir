@@ -8,8 +8,6 @@ DocID = str
 TokenStream = Iterator[Token]
 TokenDocIDStream = Iterator[Tuple[Token, DocID]]
 
-_stop_words = load_stop_words()
-
 
 class Tokenizer:
     """Base tokenizer interface.
@@ -20,10 +18,13 @@ class Tokenizer:
 
     NON_ALPHA_NUMERIC = re.compile('\W+')
 
+    def __init__(self):
+        self.stop_words = load_stop_words()
+
     def tokenize(self, text: str, stop_words: Set[str] = None) -> TokenStream:
         """Separate a text into a set of tokens."""
         if stop_words is None:
-            stop_words = _stop_words
+            stop_words = self.stop_words
         tokens = filter(None, self.NON_ALPHA_NUMERIC.split(text))
         tokens = map(str.lower, tokens)
         tokens = filter(lambda t: t not in stop_words, tokens)
@@ -41,6 +42,7 @@ class CACM(Tokenizer):
     SECTION_REGEX = re.compile(r'^\.(?P<section>\w)$')
 
     def __init__(self, filename: str):
+        super().__init__()
         self.filename = filename
 
     def _from_file(self) -> TokenDocIDStream:

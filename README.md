@@ -8,16 +8,11 @@ The project aims at implementing various notions of IR such as tokenization, ind
 
 ## Installation
 
-- Place CACM and Stanford text datasets as well as the list of common words into the VCS-ignored `data/` directory, like so:
+- Place the CACM, CS276 and Stanford datasets on your computer, then create a `.env` file with the following variables:
 
-```
-.
-├── README.md
-├── ...
-└── data/
-    ├── cacm.all
-    ├── common_words.txt
-    └── stanford/
+```dotenv
+DATA_STOP_WORDS_PATH=path/to/common_words.txt
+DATA_CACM_PATH=path/to/cacm.all
 ```
 
 - Get [Python] (3.6+) and [Pipenv] and install dependencies:
