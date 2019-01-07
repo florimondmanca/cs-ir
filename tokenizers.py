@@ -4,6 +4,7 @@ from itertools import count
 from typing import Tuple, List, Set, Iterator
 
 from resources import load_stop_words
+from utils import find_files, find_dirs
 
 Token = str
 DocID = str
@@ -100,14 +101,6 @@ class CACM(Tokenizer):
         yield from self._from_file()
 
 
-def find_dirs(root):
-    return (e.name for e in os.scandir(root) if e.is_dir())
-
-
-def find_files(root):
-    return (e.name for e in os.scandir(root) if e.is_file())
-
-
 class Stanford(Tokenizer):
     location_env_var = "DATA_STANFORD_PATH"
 
@@ -120,12 +113,9 @@ class Stanford(Tokenizer):
     def _from_dir(self) -> TokenDocIDStream:
         doc_ids = count(1)
         with open(self.doc_map_filename, "w") as doc_map, open(self.token_cache_filename, "w") as cache:
-            for dir_name in find_dirs(self.dir_name):
-                for filename in find_files(
-                    os.path.join(self.dir_name, dir_name)
-                ):
-                    path = os.path.join(self.dir_name, dir_name, filename)
-                    print(f"Loading f{path}…")
+            for _, dir_path in find_dirs(self.dir_name):
+                for filename, path in find_files(dir_path):
+                    print(f"Loading {path}…")
                     doc_id = next(doc_ids)
                     doc_map.write(f"{doc_id} {filename}\n")
                     for token in self._from_file(path):
