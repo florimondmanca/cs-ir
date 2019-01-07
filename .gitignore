@@ -11,3 +11,6 @@ data/
 
 # Environment variables
 .env
+
+# Cache
+.stanford_*

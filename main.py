@@ -1,11 +1,10 @@
-import os
 from collections import Counter
 
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
 from heaps import estimate, create_heaps
-from tokenizers import CACM, Tokenizer
+from tokenizers import Tokenizer, Stanford
 
 load_dotenv()
 
@@ -65,4 +64,5 @@ def main(tokenizer: Tokenizer):
 
 
 if __name__ == "__main__":
-    main(CACM(os.getenv("DATA_CACM_PATH")))
+    collection = Stanford
+    main(collection())

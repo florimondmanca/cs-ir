@@ -1,4 +1,6 @@
+import os
 import re
+from itertools import count
 from typing import Tuple, List, Set, Iterator
 
 from resources import load_stop_words
@@ -7,6 +9,8 @@ Token = str
 DocID = str
 TokenStream = Iterator[Token]
 TokenDocIDStream = Iterator[Tuple[Token, DocID]]
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 class Tokenizer:
@@ -37,13 +41,15 @@ class Tokenizer:
 class CACM(Tokenizer):
     """Tokenizer for the CACM collection."""
 
+    location_env_var = "DATA_CACM_PATH"
+
     SECTIONS_OF_INTEREST = {"W", "T", "K"}
     DOC_ID_REGEX = re.compile(r'^\.(?P<section>I) (?P<doc_id>\d+)$')
     SECTION_REGEX = re.compile(r'^\.(?P<section>\w)$')
 
-    def __init__(self, filename: str):
+    def __init__(self):
         super().__init__()
-        self.filename = filename
+        self.filename = os.getenv(self.location_env_var)
 
     def _from_file(self) -> TokenDocIDStream:
         """Load tokens and doc_ids from the CACM collection from disk."""
@@ -92,3 +98,57 @@ class CACM(Tokenizer):
 
     def __iter__(self) -> TokenDocIDStream:
         yield from self._from_file()
+
+
+def find_dirs(root):
+    return (e.name for e in os.scandir(root) if e.is_dir())
+
+
+def find_files(root):
+    return (e.name for e in os.scandir(root) if e.is_file())
+
+
+class Stanford(Tokenizer):
+    location_env_var = "DATA_STANFORD_PATH"
+
+    def __init__(self):
+        super().__init__()
+        self.dir_name = os.getenv(self.location_env_var)
+        self.token_cache_filename = os.path.join(HERE, ".stanford_tokens.txt")
+        self.doc_map_filename = os.path.join(HERE, ".stanford_doc_map.txt")
+
+    def _from_dir(self) -> TokenDocIDStream:
+        doc_ids = count(1)
+        with open(self.doc_map_filename, "w") as doc_map, open(self.token_cache_filename, "w") as cache:
+            for dir_name in find_dirs(self.dir_name):
+                for filename in find_files(
+                    os.path.join(self.dir_name, dir_name)
+                ):
+                    path = os.path.join(self.dir_name, dir_name, filename)
+                    print(f"Loading f{path}…")
+                    doc_id = next(doc_ids)
+                    doc_map.write(f"{doc_id} {filename}\n")
+                    for token in self._from_file(path):
+                        cache.write(f"{token} {doc_id}\n")
+                        yield (token, doc_id)
+
+    @staticmethod
+    def _from_file(path: str):
+        with open(path, "r") as f:
+            for line in f:
+                for token in line.split():
+                    yield token
+
+    def _from_cache(self) -> TokenDocIDStream:
+        with open(self.token_cache_filename, "r") as f:
+            print(f"Using cache at {self.token_cache_filename}…")
+            for line in f:
+                token, doc_id = line.split()
+                yield token, int(doc_id)
+            print("Finished consuming cache")
+
+    def __iter__(self) -> TokenDocIDStream:
+        try:
+            yield from self._from_cache()
+        except FileNotFoundError:
+            yield from self._from_dir()
