@@ -1,4 +1,13 @@
+# Python binaries
 *.pyc
 __pycache__/
+
+# IDE
 .idea/
+.vscode/
+
+# Data sets
 data/
+
+# Environment variables
+.env

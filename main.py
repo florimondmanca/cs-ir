@@ -1,9 +1,13 @@
+import os
 from collections import Counter
 
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
 from heaps import estimate, create_heaps
 from tokenizers import CACM, Tokenizer
+
+load_dotenv()
 
 
 def main(tokenizer: Tokenizer):
@@ -61,4 +65,4 @@ def main(tokenizer: Tokenizer):
 
 
 if __name__ == "__main__":
-    main(CACM("data/cacm.all"))
+    main(CACM(os.getenv("DATA_CACM_PATH")))
