@@ -1,15 +1,11 @@
 import os
 import re
 from itertools import count
-from typing import Tuple, List, Set, Iterator
+from typing import List, Set
 
+from datatypes import TokenStream, TokenDocIDStream
 from resources import load_stop_words
 from utils import find_files, find_dirs
-
-Token = str
-DocID = int
-TokenStream = Iterator[Token]
-TokenDocIDStream = Iterator[Tuple[Token, DocID]]
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 

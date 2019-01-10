@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from collections import defaultdict
 from dataclasses import dataclass, astuple
 from itertools import count
 from typing import List, Optional, Generator
@@ -9,13 +10,14 @@ from dotenv import load_dotenv
 
 import tokenizers
 import utils
+from datatypes import Index
 
 load_dotenv()
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def build_index(tokenizer: tokenizers.Tokenizer, block_size: int) -> dict:
+def build_index(tokenizer: tokenizers.Tokenizer, block_size: int) -> Index:
     """Build an index out of a token stream.
 
     Notes
@@ -45,16 +47,22 @@ def build_index(tokenizer: tokenizers.Tokenizer, block_size: int) -> dict:
             sorter.add(Entry(token, doc_id))
         result = sorter.merge()
 
-    # Build the index by grouping the results by token
-    index = {}
+    # Build postings by grouping doc IDs by token
+    postings = defaultdict(list)
+    doc_ids = set()
+    terms = set()
     for entry in result:
-        index.setdefault(entry.token, [])
-        index[entry.token].append(entry.doc_id)
-    return index
+        doc_ids.add(entry.doc_id)
+        terms.add(entry.token)
+        postings.setdefault(entry.token, [])
+        postings[entry.token].append(entry.doc_id)
+
+    return Index(postings=postings, terms=terms, doc_ids=doc_ids)
 
 
 # NOTE: `order=True` auto-generates comparison methods, allowing
 # to sort a list of entries without specifying a `key` function.
+# In this case, comparing two entries will be done by token and then by doc_id.
 @dataclass(order=True)
 class Entry:
     """Entry in a collection made of a token ID and document ID."""
