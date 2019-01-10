@@ -16,3 +16,7 @@ data/
 .stanford_*
 bisbi-cache/
 output
+
+# Temp dirs and results
+results/
+tmp/

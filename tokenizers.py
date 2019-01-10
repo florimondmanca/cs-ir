@@ -7,7 +7,7 @@ from resources import load_stop_words
 from utils import find_files, find_dirs
 
 Token = str
-DocID = str
+DocID = int
 TokenStream = Iterator[Token]
 TokenDocIDStream = Iterator[Tuple[Token, DocID]]
 
