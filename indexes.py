@@ -47,17 +47,25 @@ def build_index(tokenizer: tokenizers.Tokenizer, block_size: int) -> Index:
             sorter.add(Entry(token, doc_id))
         result = sorter.merge()
 
-    # Build postings by grouping doc IDs by token
     postings = defaultdict(list)
     doc_ids = set()
     terms = set()
+    document_frequencies = defaultdict(int)
     for entry in result:
-        doc_ids.add(entry.doc_id)
-        terms.add(entry.token)
+        # Note: if a token occurs multiple times in a document, the docID will
+        # be present multiple times in the posting list.
         postings.setdefault(entry.token, [])
         postings[entry.token].append(entry.doc_id)
+        doc_ids.add(entry.doc_id)
+        terms.add(entry.token)
+        document_frequencies[entry.token] += 1
 
-    return Index(postings=postings, terms=terms, doc_ids=doc_ids)
+    return Index(
+        postings=postings,
+        terms=terms,
+        doc_ids=doc_ids,
+        df=document_frequencies,
+    )
 
 
 # NOTE: `order=True` auto-generates comparison methods, allowing
@@ -158,7 +166,7 @@ class ExternalSorter:
         return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     index = build_index(tokenizers.CACM(), 10000)
     with open("results/index.json", "w") as index_file:
         index_file.write(json.dumps(index))

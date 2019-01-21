@@ -22,13 +22,10 @@ class Tokenizer:
     def __init__(self):
         self.stop_words = load_stop_words()
 
-    def tokenize(self, text: str, stop_words: Set[str] = None) -> TokenStream:
+    def tokenize(self, text: str) -> TokenStream:
         """Separate a text into a set of tokens."""
-        if stop_words is None:
-            stop_words = self.stop_words
         tokens = filter(None, self.NON_ALPHA_NUMERIC.split(text))
         tokens = map(str.lower, tokens)
-        tokens = filter(lambda t: t not in stop_words, tokens)
         return tokens
 
     def __iter__(self) -> TokenDocIDStream:
@@ -47,6 +44,14 @@ class CACM(Tokenizer):
     def __init__(self):
         super().__init__()
         self.filename = os.getenv(self.location_env_var)
+        self.stop_words = load_stop_words()
+
+    def tokenize(self, text: str, stop_words: Set[str] = None):
+        if stop_words is None:
+            stop_words = self.stop_words
+        tokens = super().tokenize(text)
+        tokens = filter(lambda t: t not in stop_words, tokens)
+        return tokens
 
     def _from_file(self) -> TokenDocIDStream:
         """Load tokens and doc_ids from the CACM collection from disk."""
