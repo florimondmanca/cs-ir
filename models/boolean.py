@@ -23,7 +23,7 @@ class Q:
         >>> Q("a") & Q("b")
         """
 
-        def intersect(left: PostingList, index: Index):
+        def intersect(left: PostingList, index: Index) -> PostingList:
             right = other(index)
             return sorted(set(left) & set(right))
 
@@ -39,7 +39,7 @@ class Q:
         >>> Q("a") | Q("b")
         """
 
-        def union(left: PostingList, index: Index):
+        def union(left: PostingList, index: Index) -> PostingList:
             right = other(index)
             return sorted(set(left) | set(right))
 
