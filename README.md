@@ -8,7 +8,7 @@ The project aims at implementing various notions of IR such as tokenization, ind
 
 ## Installation
 
-- Place the CACM, CS276 and Stanford datasets on your computer, then create a `.env` file with the following variables:
+- Place the CACM and CS276 datasets on your computer, then create a `.env` file with the following variables:
 
 ```dotenv
 DATA_STOP_WORDS_PATH=path/to/common_words.txt

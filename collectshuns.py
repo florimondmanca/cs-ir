@@ -102,10 +102,10 @@ class CACM(Collection):
         yield from self._from_file()
 
 
-class Stanford(Collection):
+class CS276(Collection):
     """The Stanford CS276 collection."""
 
-    location_env_var = "DATA_STANFORD_PATH"
+    location_env_var = "DATA_CS276_PATH"
 
     def __init__(self):
         super().__init__()
