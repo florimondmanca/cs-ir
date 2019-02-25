@@ -1,7 +1,11 @@
 """Boolean request model implementation."""
 from typing import List, Callable
 
+import click
+
 from datatypes import Index, PostingList, Term
+import tokenizers
+from indexes import build_index
 
 Operation = Callable[[PostingList, Index], PostingList]
 
@@ -64,3 +68,33 @@ class Q:
             postings = operation(postings, index)
 
         return postings
+
+    def __str__(self) -> str:
+        return f"<Q {self.operations}>"
+
+
+def validate_tokenizer(ctx, param, value: str) -> tokenizers.Tokenizer:
+    try:
+        tokenizer_cls = getattr(tokenizers, value)
+    except AttributeError:
+        raise click.BadParameter(f"No tokenizer named {value} in {tokenizers}")
+    else:
+        return tokenizer_cls()
+
+
+@click.command()
+@click.argument("tokenizer", callback=validate_tokenizer)
+def cli(tokenizer: tokenizers.Tokenizer):
+    """Test the boolean model against a dataset."""
+    click.echo(f"Building index for {tokenizer.__class__.__name__}…")
+    index = build_index(tokenizer)
+
+    query = Q("algorithm") | Q("artifical")
+    click.echo(f"Executing {query}...")
+    results = query(index)
+
+    click.echo(results)
+
+
+if __name__ == "__main__":
+    cli()

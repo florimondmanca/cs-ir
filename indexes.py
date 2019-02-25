@@ -17,7 +17,9 @@ load_dotenv()
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def build_index(tokenizer: tokenizers.Tokenizer, block_size: int) -> Index:
+def build_index(
+    tokenizer: tokenizers.Tokenizer, block_size: int = 10000
+) -> Index:
     """Build an index out of a token stream.
 
     Notes
@@ -34,8 +36,8 @@ def build_index(tokenizer: tokenizers.Tokenizer, block_size: int) -> Index:
     ----------
     tokenizer : Tokenizer
         Stream of token and doc_id pairs.
-    block_size : int
-        Number of `(token, doc_id)` pairs per block.
+    block_size : int, optional
+        Number of `(token, doc_id)` pairs per block. Defaults to 10,000.
 
     Returns
     -------
