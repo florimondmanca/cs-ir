@@ -122,7 +122,9 @@ class Index:
 
 
 def build_index(
-    collection: Collection, block_size: int = DEFAULT_BLOCK_SIZE
+    collection: Collection,
+    block_size: int = DEFAULT_BLOCK_SIZE,
+    no_cache: bool = False,
 ) -> Index:
     """Build an index out of a token stream.
 
@@ -145,14 +147,20 @@ def build_index(
         Stream of token and doc_id pairs.
     block_size : int, optional
         Number of `(token, doc_id)` pairs per block. Defaults to 10,000.
+    no_cache : bool, optional
+        If `True`, skip using the cache (if it exists) and
+        re-build the index from scratch.
 
     Returns
     -------
     index : dict
         A mapping of a `token` to a posting list (list of `doc_id`s).
     """
-    with suppress(FileNotFoundError):
-        return Index.from_cache(collection)
+    if not no_cache:
+        try:
+            return Index.from_cache(collection)
+        except FileNotFoundError as exc:
+            print(f"Cache does not exist: {exc}")
 
     return Index.build(collection, block_size=block_size)
 
@@ -268,8 +276,24 @@ def indexes():
 @indexes.command()
 @click.argument("collection", type=CollectionType())
 @click.option("--block-size", "-b", default=DEFAULT_BLOCK_SIZE, type=int)
-def build(collection: Collection, block_size: int):
-    build_index(collection, block_size=block_size)
+@click.option("--force", is_flag=True)
+def build(collection: Collection, block_size: int, force: bool):
+    if not force and collection.index_cache_exists:
+        click.echo(
+            click.style(
+                f"{collection.name} index already exists! ", fg="yellow"
+            ),
+            nl=False,
+        )
+        click.echo(
+            "Use "
+            + click.style("--force", fg="red")
+            + " to re-build it from scratch."
+        )
+        return
+
+    build_index(collection, block_size=block_size, no_cache=True)
+    click.echo(click.style("Done!", fg="green"))
 
 
 if __name__ == "__main__":

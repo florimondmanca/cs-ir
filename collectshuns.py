@@ -33,6 +33,10 @@ class Collection:
         """Return the location of the index cache for this collection."""
         return os.path.join(CACHE, f"{self.name}_index.json")
 
+    @property
+    def index_cache_exists(self) -> bool:
+        return os.path.isfile(self.index_cache)
+
     def tokenize(self, text: str) -> TokenStream:
         """Separate a text into a stream of tokens."""
         tokens = filter(None, self.NON_ALPHA_NUMERIC.split(text))
