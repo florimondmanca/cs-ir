@@ -11,20 +11,32 @@ from heaps import estimate, create_heaps
 load_dotenv()
 
 
-def inspect(tokenizer: Tokenizer):
+@click.command()
+@click.argument("tokenizer", callback=validate_tokenizer)
+def cli(tokenizer: Tokenizer):
+    """Inspect a collection and display key metrics.
+
+    - Number of documents
+    - Number of tokens
+    - Vocabulary size
+    - Heaps parameter estimation
+    - Estimated size of the vocabulary for 10^6 tokens
+    - 5 most frequent terms
+    - Rank/frequency plots.
+    """
     tokens, doc_ids = zip(*tokenizer)
 
     doc_ids = set(doc_ids)
 
-    print("Documents:", len(doc_ids))
+    click.echo(f"Documents: {len(doc_ids)}")
 
     # Q1
     num_tokens = len(tokens)
-    print("Tokens:", num_tokens)
+    click.echo(f"Tokens: {num_tokens}")
 
     # Q2
     vocabulary_size = len(set(tokens))
-    print("Terms (vocabulary size):", vocabulary_size)
+    click.echo(f"Terms (vocabulary size): {vocabulary_size}")
 
     # Q3
     half_tokens = tokens[::2]
@@ -34,23 +46,25 @@ def inspect(tokenizer: Tokenizer):
         m2=len(set(half_tokens)),
         t2=len(half_tokens),
     )
-    print("Heaps parameters:", "k =", int(k), "b =", round(b, 2))
+    click.echo(f"Heaps parameters: k = {int(k)}, b = {round(b, 2)}")
 
     # Q4
     heaps = create_heaps(k, b)
-    print("Estimated vocabulary size for 1 million tokens:", int(heaps(1e6)))
+    click.echo(
+        f"Estimated vocabulary size for 1 million tokens: {int(heaps(1e6))}"
+    )
 
     # Q5
     frequencies = Counter(tokens)
     t, f = zip(*sorted(frequencies.items(), key=lambda x: x[1], reverse=True))
     r = range(len(f))
-    n_most = 5
-    print(
-        n_most,
-        "most frequent terms:",
-        ", ".join(f"{ti} ({fi})" for ti, fi in zip(t[:n_most], f[:n_most])),
+    n = 5
+    n_most_frequent_terms = ", ".join(
+        f"{ti} ({fi})" for ti, fi in zip(t[:n], f[:n])
     )
+    click.echo(f"{n} most frequent terms: {n_most_frequent_terms}")
 
+    click.echo("Building and opening rank/frequency plots…")
     fig = plt.figure()
     fig.suptitle(
         f"Rank / Frequency plots. Collection: {tokenizer.__class__.__name__}"
@@ -67,22 +81,6 @@ def inspect(tokenizer: Tokenizer):
     ax2.loglog(r, f)
 
     plt.show()
-
-
-@click.command()
-@click.argument("tokenizer", callback=validate_tokenizer)
-def cli(tokenizer: Tokenizer):
-    """Inspect a collection with language processing algorithms.
-    
-    - Number of documents
-    - Number of tokens
-    - Vocabulary size
-    - Heaps parameter estimation
-    - Estimated size of the vocabulary for 10^6 tokens
-    - 5 most frequent terms
-    - Rank/frequency plots.
-    """
-    inspect(tokenizer)
 
 
 if __name__ == "__main__":
