@@ -3,9 +3,9 @@ from typing import List, Callable
 
 import click
 
-from cli_utils import validate_tokenizer
+from cli_utils import CollectionType
 from datatypes import Index, PostingList, Term
-import tokenizers
+from collectshuns import Collection
 from indexes import build_index
 
 Operation = Callable[[PostingList, Index], PostingList]
@@ -75,11 +75,11 @@ class Q:
 
 
 @click.command()
-@click.argument("tokenizer", callback=validate_tokenizer)
-def cli(tokenizer: tokenizers.Tokenizer):
-    """Test the boolean model against a dataset."""
-    click.echo(f"Building index for {tokenizer.__class__.__name__}…")
-    index = build_index(tokenizer)
+@click.argument("collection", type=CollectionType())
+def cli(collection: Collection):
+    """Test the boolean model on a collection."""
+    click.echo(f"Building index for {collection.__class__.__name__}…")
+    index = build_index(collection)
 
     query = Q("algorithm") | Q("artifical")
     click.echo(f"Executing {query}...")

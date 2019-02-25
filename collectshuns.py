@@ -1,7 +1,9 @@
+# NOTE: this is not named `collections.py` because it would clash
+# with the standard library's `collections` module.
 import os
 import re
 from itertools import count
-from typing import List, Set
+from typing import List
 
 from datatypes import TokenStream, TokenDocIDStream
 from resources import load_stop_words
@@ -10,10 +12,10 @@ from utils import find_files, find_dirs
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-class Tokenizer:
-    """Base tokenizer interface.
+class Collection:
+    """Base collection interface.
 
-    A tokenizer is an iterator (in Python sense) that yields a stream
+    A collection is a Python iterator that yields a stream
     of (token, doc_id) pairs.
     """
 
@@ -23,7 +25,7 @@ class Tokenizer:
         self.stop_words = load_stop_words()
 
     def tokenize(self, text: str) -> TokenStream:
-        """Separate a text into a set of tokens."""
+        """Separate a text into a stream of tokens."""
         tokens = filter(None, self.NON_ALPHA_NUMERIC.split(text))
         tokens = map(str.lower, tokens)
         return tokens
@@ -32,8 +34,8 @@ class Tokenizer:
         raise NotImplementedError
 
 
-class CACM(Tokenizer):
-    """Tokenizer for the CACM collection."""
+class CACM(Collection):
+    """The CACM collection."""
 
     location_env_var = "DATA_CACM_PATH"
 
@@ -46,11 +48,9 @@ class CACM(Tokenizer):
         self.filename = os.getenv(self.location_env_var)
         self.stop_words = load_stop_words()
 
-    def tokenize(self, text: str, stop_words: Set[str] = None):
-        if stop_words is None:
-            stop_words = self.stop_words
+    def tokenize(self, text: str):
         tokens = super().tokenize(text)
-        tokens = filter(lambda t: t not in stop_words, tokens)
+        tokens = filter(lambda t: t not in self.stop_words, tokens)
         return tokens
 
     def _from_file(self) -> TokenDocIDStream:
@@ -102,7 +102,9 @@ class CACM(Tokenizer):
         yield from self._from_file()
 
 
-class Stanford(Tokenizer):
+class Stanford(Collection):
+    """The Stanford CS276 collection."""
+
     location_env_var = "DATA_STANFORD_PATH"
 
     def __init__(self):

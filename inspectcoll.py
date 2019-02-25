@@ -4,16 +4,16 @@ import click
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
-from cli_utils import validate_tokenizer
-from tokenizers import Tokenizer
+from cli_utils import CollectionType
+from collectshuns import Collection
 from heaps import estimate, create_heaps
 
 load_dotenv()
 
 
 @click.command()
-@click.argument("tokenizer", callback=validate_tokenizer)
-def cli(tokenizer: Tokenizer):
+@click.argument("collection", type=CollectionType())
+def cli(collection: Collection):
     """Inspect a collection and display key metrics.
 
     - Number of documents
@@ -24,7 +24,7 @@ def cli(tokenizer: Tokenizer):
     - 5 most frequent terms
     - Rank/frequency plots.
     """
-    tokens, doc_ids = zip(*tokenizer)
+    tokens, doc_ids = zip(*collection)
 
     doc_ids = set(doc_ids)
 
@@ -67,7 +67,7 @@ def cli(tokenizer: Tokenizer):
     click.echo("Building and opening rank/frequency plots…")
     fig = plt.figure()
     fig.suptitle(
-        f"Rank / Frequency plots. Collection: {tokenizer.__class__.__name__}"
+        f"Rank / Frequency plots. Collection: {collection.__class__.__name__}"
     )
 
     ax1 = fig.add_subplot(1, 2, 1)

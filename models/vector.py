@@ -5,7 +5,7 @@ from math import sqrt, log10
 from typing import List, Dict, Type, Union
 
 from datatypes import Index, DocID, Term, PostingList
-from tokenizers import Tokenizer
+from collectshuns import Collection
 
 
 class WeightingScheme:
@@ -85,7 +85,7 @@ class TfIdf(WeightingScheme):
     def tf(self, term: Term, doc: Union[DocID, str]) -> float:
         if isinstance(doc, str):
             # Reuse the tokenize algorithm.
-            tokens = Tokenizer().tokenize(doc)
+            tokens = Collection().tokenize(doc)
             return sum(1 for token in tokens if token == term)
         else:
             doc_ids: PostingList = self.index.postings[term]

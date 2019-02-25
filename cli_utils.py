@@ -1,12 +1,19 @@
 import click
 
-import tokenizers
+import collectshuns
 
-# Validator meant to be used as a callback in a Click argument or option.
-def validate_tokenizer(ctx, param, value: str) -> tokenizers.Tokenizer:
-    try:
-        tokenizer_cls = getattr(tokenizers, value)
-    except AttributeError:
-        raise click.BadParameter(f"No tokenizer named {value} in {tokenizers}")
-    else:
-        return tokenizer_cls()
+
+class CollectionType(click.ParamType):
+
+    name = "collection"
+
+    def convert(self, value, param, ctx):
+        getattr(collectshuns, "CACM")
+        try:
+            cls = getattr(collectshuns, value)
+        except AttributeError:
+            raise click.BadParameter(
+                f"Collection {value} not found in {collectshuns}"
+            )
+        else:
+            return cls()

@@ -8,7 +8,7 @@ from typing import List, Optional, Generator
 
 from dotenv import load_dotenv
 
-import tokenizers
+import collectshuns
 import utils
 from datatypes import Index
 
@@ -18,7 +18,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def build_index(
-    tokenizer: tokenizers.Tokenizer, block_size: int = 10000
+    collection: collectshuns.Collection, block_size: int = 10000
 ) -> Index:
     """Build an index out of a token stream.
 
@@ -34,7 +34,7 @@ def build_index(
 
     Parameters
     ----------
-    tokenizer : Tokenizer
+    collection : Collection
         Stream of token and doc_id pairs.
     block_size : int, optional
         Number of `(token, doc_id)` pairs per block. Defaults to 10,000.
@@ -45,7 +45,7 @@ def build_index(
         A mapping of a `token` to a posting list (list of `doc_id`s).
     """
     with ExternalSorter(block_size) as sorter:
-        for token, doc_id in tokenizer:
+        for token, doc_id in collection:
             sorter.add(Entry(token, doc_id))
         result = sorter.merge()
 
@@ -167,6 +167,6 @@ class ExternalSorter:
 
 
 if __name__ == "__main__":
-    index = build_index(tokenizers.CACM(), 10000)
+    index = build_index(collectshuns.CACM(), 10000)
     with open("results/index.json", "w") as index_file:
         index_file.write(json.dumps(index))
