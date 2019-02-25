@@ -28,17 +28,29 @@ pipenv install
 To inspect a collection and display its key metrics, run:
 
 ```python
-python -m inspectcoll <TOKENIZER>
+python -m inspectcoll <COLLECTION>
 # Example:
 python -m inspectcoll CACM
 ```
+
+### Building indexes
+
+To build an index, run:
+
+```python
+python -m indexes build <COLLECTION>
+# Example:
+python -m indexes build CACM
+```
+
+The index will be stored in the `cache/` directory and re-used when necessary. You can re-build it by running the above command with the `--force` flag.
 
 ### Boolean requests
 
 To make a boolean request against a collection, use:
 
 ```python
-python -m models.boolean <TOKENIZER>
+python -m models.boolean <COLLECTION>
 # Example:
 python -m models.boolean CACM
 ```
