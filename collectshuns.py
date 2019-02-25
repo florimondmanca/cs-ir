@@ -24,6 +24,15 @@ class Collection:
     def __init__(self):
         self.stop_words = load_stop_words()
 
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__.lower()
+
+    @property
+    def index_cache(self) -> str:
+        """Return the location of the index cache for this collection."""
+        return os.path.join(CACHE, f"{self.name}_index.json")
+
     def tokenize(self, text: str) -> TokenStream:
         """Separate a text into a stream of tokens."""
         tokens = filter(None, self.NON_ALPHA_NUMERIC.split(text))

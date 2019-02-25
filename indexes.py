@@ -2,25 +2,130 @@ import json
 import os
 import shutil
 from collections import defaultdict
-from dataclasses import dataclass, astuple
+from contextlib import suppress
 from itertools import count
-from typing import List, Optional, Generator
+from typing import DefaultDict, Dict, Generator, List, Optional, Set
 
 from dotenv import load_dotenv
 
-import collectshuns
-import utils
-from datatypes import Index
+from collectshuns import CACM, Collection
+from dataclasses import astuple, dataclass
+from datatypes import DocID, PostingList, Term
+from utils import find_files, multi_open
 
 load_dotenv()
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_BLOCK_SIZE = 10000
+
+
+class Index:
+    """Represents an index.
+
+    Parameters
+    ----------
+    postings : dict
+        Mapping of terms to a list of doc IDs.
+    terms : set
+        Set of unique tokens.
+    doc_ids : set
+        Set of unique doc IDs.
+    df : dict
+        Document frequency for each term, i.e. number of documents that
+        contain the term.
+    """
+
+    def __init__(
+        self,
+        postings: Dict[Term, PostingList],
+        terms: Set[Term],
+        doc_ids: Set[DocID],
+        df: Dict[Term, int],
+        collection: Collection = None,
+    ):
+        self.postings: DefaultDict[Term, PostingList] = defaultdict(
+            list, **postings
+        )
+        self.terms = terms
+        self.doc_ids = doc_ids
+        self.df = df
+        self.collection = collection
+
+    @property
+    def num_documents(self) -> int:
+        """Number of documents in the collection."""
+        return len(self.doc_ids)
+
+    @classmethod
+    def from_cache(cls, collection: Collection):
+        print(f"Loading {collection.name} index from cache…")
+        with open(collection.index_cache, "r") as index_file:
+            data = json.load(index_file)
+
+        return Index(
+            postings=data["postings"],
+            terms=data["terms"],
+            doc_ids=data["doc_ids"],
+            df=data["df"],
+            collection=collection,
+        )
+
+    @classmethod
+    def build(
+        cls, collection: Collection, block_size: int = DEFAULT_BLOCK_SIZE
+    ):
+        print("Building {collection.name} index…")
+        with ExternalSorter(block_size) as sorter:
+            for token, doc_id in collection:
+                sorter.add(Entry(token, doc_id))
+            result = sorter.merge()
+
+        postings = defaultdict(list)
+        doc_ids = set()
+        terms = set()
+        document_frequencies = defaultdict(int)
+        for entry in result:
+            # Note: if a token occurs multiple times in a document, the docID will
+            # be present multiple times in the posting list.
+            postings.setdefault(entry.token, [])
+            postings[entry.token].append(entry.doc_id)
+            doc_ids.add(entry.doc_id)
+            terms.add(entry.token)
+            document_frequencies[entry.token] += 1
+
+        index = cls(
+            postings=postings,
+            terms=terms,
+            doc_ids=doc_ids,
+            df=document_frequencies,
+            collection=collection,
+        )
+
+        index.to_cache()
+
+        return index
+
+    def to_cache(self):
+        assert self.collection is not None
+        data = {
+            "collection": self.collection.name,
+            "postings": self.postings,
+            "terms": list(self.terms),
+            "doc_ids": list(self.doc_ids),
+            "df": self.df,
+        }
+        contents = json.dumps(data)
+        with open(self.collection.index_cache, "w") as index_file:
+            index_file.write(contents)
 
 
 def build_index(
-    collection: collectshuns.Collection, block_size: int = 10000
+    collection: Collection, block_size: int = DEFAULT_BLOCK_SIZE
 ) -> Index:
     """Build an index out of a token stream.
+
+    If the index has already been built and stored in the collection's index
+    cache, it is used.
 
     Notes
     -----
@@ -44,27 +149,10 @@ def build_index(
     index : dict
         A mapping of a `token` to a posting list (list of `doc_id`s).
     """
-    with ExternalSorter(block_size) as sorter:
-        for token, doc_id in collection:
-            sorter.add(Entry(token, doc_id))
-        result = sorter.merge()
+    with suppress(FileNotFoundError):
+        return Index.from_cache(collection)
 
-    postings = defaultdict(list)
-    doc_ids = set()
-    terms = set()
-    document_frequencies = defaultdict(int)
-    for entry in result:
-        # Note: if a token occurs multiple times in a document, the docID will
-        # be present multiple times in the posting list.
-        postings.setdefault(entry.token, [])
-        postings[entry.token].append(entry.doc_id)
-        doc_ids.add(entry.doc_id)
-        terms.add(entry.token)
-        document_frequencies[entry.token] += 1
-
-    return Index(
-        postings=postings, terms=terms, doc_ids=doc_ids, df=document_frequencies
-    )
+    return Index.build(collection, block_size=block_size)
 
 
 # NOTE: `order=True` auto-generates comparison methods, allowing
@@ -144,8 +232,8 @@ class ExternalSorter:
         """Merge blocks into a single final dictionary."""
         result: List[Entry] = []
 
-        block_paths = [path for _, path in utils.find_files(self.temp_path)]
-        with utils.multi_open(block_paths) as files:
+        block_paths = [path for _, path in find_files(self.temp_path)]
+        with multi_open(block_paths) as files:
             blocks = [read_block(f) for f in files]
 
             # A list of the entry to be merged from each (sorted) block.
@@ -167,6 +255,4 @@ class ExternalSorter:
 
 
 if __name__ == "__main__":
-    index = build_index(collectshuns.CACM(), 10000)
-    with open("results/index.json", "w") as index_file:
-        index_file.write(json.dumps(index))
+    build_index(CACM(), 10000).to_cache()

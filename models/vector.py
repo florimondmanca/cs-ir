@@ -4,7 +4,8 @@ from heapq import nlargest
 from math import sqrt, log10
 from typing import List, Dict, Type, Union
 
-from datatypes import Index, DocID, Term, PostingList
+from datatypes import DocID, Term, PostingList
+from indexes import Index
 from collectshuns import Collection
 
 
