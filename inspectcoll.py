@@ -11,7 +11,7 @@ from heaps import estimate, create_heaps
 load_dotenv()
 
 
-def main(tokenizer: Tokenizer):
+def inspect(tokenizer: Tokenizer):
     tokens, doc_ids = zip(*tokenizer)
 
     doc_ids = set(doc_ids)
@@ -53,7 +53,7 @@ def main(tokenizer: Tokenizer):
 
     fig = plt.figure()
     fig.suptitle(
-        "Rank / Frequency plots. " f"Collection: {tokenizer.__class__.__name__}"
+        f"Rank / Frequency plots. Collection: {tokenizer.__class__.__name__}"
     )
 
     ax1 = fig.add_subplot(1, 2, 1)
@@ -72,7 +72,17 @@ def main(tokenizer: Tokenizer):
 @click.command()
 @click.argument("tokenizer", callback=validate_tokenizer)
 def cli(tokenizer: Tokenizer):
-    main(tokenizer)
+    """Inspect a collection with language processing algorithms.
+    
+    - Number of documents
+    - Number of tokens
+    - Vocabulary size
+    - Heaps parameter estimation
+    - Estimated size of the vocabulary for 10^6 tokens
+    - 5 most frequent terms
+    - Rank/frequency plots.
+    """
+    inspect(tokenizer)
 
 
 if __name__ == "__main__":

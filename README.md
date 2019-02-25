@@ -21,24 +21,24 @@ DATA_CACM_PATH=path/to/cacm.all
 pipenv install
 ```
 
-## Quick start
-
-You can run the main script (but this is bound to change):
-
-```bash
-python main.py
-```
-
-Watch for plots and the output in the console.
-
 ## Usage
+
+### Collection inspection
+
+To inspect a collection and display its key metrics, run:
+
+```python
+python -m inspectcoll <TOKENIZER>
+# Example:
+python -m inspectcoll CACM
+```
 
 ### Boolean requests
 
 To make a boolean request against a collection, use:
 
 ```python
-python -m models.boolean [CACM | Stanford]
+python -m models.boolean <TOKENIZER>
 # Example:
 python -m models.boolean CACM
 ```
