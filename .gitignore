@@ -5,6 +5,7 @@ __pycache__/
 # IDE
 .idea/
 .vscode/
+.mypy_cache/
 
 # Data sets
 data/

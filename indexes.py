@@ -61,10 +61,7 @@ def build_index(tokenizer: tokenizers.Tokenizer, block_size: int) -> Index:
         document_frequencies[entry.token] += 1
 
     return Index(
-        postings=postings,
-        terms=terms,
-        doc_ids=doc_ids,
-        df=document_frequencies,
+        postings=postings, terms=terms, doc_ids=doc_ids, df=document_frequencies
     )
 
 
@@ -156,7 +153,8 @@ class ExternalSorter:
             while any(entries):
                 # Find entry of smallest value
                 idx, smallest = min(
-                    (i, entry) for i, entry in enumerate(entries)
+                    (i, entry)
+                    for i, entry in enumerate(entries)
                     if entry is not None
                 )
                 result.append(smallest)

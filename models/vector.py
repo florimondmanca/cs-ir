@@ -96,7 +96,7 @@ class TfIdf(WeightingScheme):
 
 
 def vector_search(
-    request: str, index: Index, k: int = 10, wcs: Type[WeightingScheme] = None,
+    request: str, index: Index, k: int = 10, wcs: Type[WeightingScheme] = None
 ) -> List[DocID]:
     """Perform a vector-space search.
 
@@ -132,7 +132,7 @@ def vector_search(
 
     for doc_id in index.doc_ids:
         if scores[doc_id]:
-            scores[doc_id] /= (sqrt(w.norm(doc_id)) * sqrt(norm_q))
+            scores[doc_id] /= sqrt(w.norm(doc_id)) * sqrt(norm_q)
 
     top_k: list = nlargest(k, scores.items(), key=lambda item: item[1])
     return [doc_id for doc_id, _ in top_k]

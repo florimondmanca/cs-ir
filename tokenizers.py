@@ -17,7 +17,7 @@ class Tokenizer:
     of (token, doc_id) pairs.
     """
 
-    NON_ALPHA_NUMERIC = re.compile('\W+')
+    NON_ALPHA_NUMERIC = re.compile(r"\W+")
 
     def __init__(self):
         self.stop_words = load_stop_words()
@@ -38,8 +38,8 @@ class CACM(Tokenizer):
     location_env_var = "DATA_CACM_PATH"
 
     SECTIONS_OF_INTEREST = {"W", "T", "K"}
-    DOC_ID_REGEX = re.compile(r'^\.(?P<section>I) (?P<doc_id>\d+)$')
-    SECTION_REGEX = re.compile(r'^\.(?P<section>\w)$')
+    DOC_ID_REGEX = re.compile(r"^\.(?P<section>I) (?P<doc_id>\d+)$")
+    SECTION_REGEX = re.compile(r"^\.(?P<section>\w)$")
 
     def __init__(self):
         super().__init__()
@@ -113,7 +113,9 @@ class Stanford(Tokenizer):
 
     def _from_dir(self) -> TokenDocIDStream:
         doc_ids = count(1)
-        with open(self.doc_map_filename, "w") as doc_map, open(self.token_cache_filename, "w") as cache:
+        with open(self.doc_map_filename, "w") as doc_map, open(
+            self.token_cache_filename, "w"
+        ) as cache:
             for _, dir_path in find_dirs(self.dir_name):
                 for filename, path in find_files(dir_path):
                     print(f"Loading {path}…")

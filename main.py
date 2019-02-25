@@ -44,14 +44,14 @@ def main(tokenizer: tokenizers.Tokenizer):
     r = range(len(f))
     n_most = 5
     print(
-        n_most, "most frequent terms:",
-        ", ".join(f"{ti} ({fi})" for ti, fi in zip(t[:n_most], f[:n_most]))
+        n_most,
+        "most frequent terms:",
+        ", ".join(f"{ti} ({fi})" for ti, fi in zip(t[:n_most], f[:n_most])),
     )
 
     fig = plt.figure()
     fig.suptitle(
-        "Rank / Frequency plots. "
-        f"Collection: {tokenizer.__class__.__name__}"
+        "Rank / Frequency plots. " f"Collection: {tokenizer.__class__.__name__}"
     )
 
     ax1 = fig.add_subplot(1, 2, 1)
