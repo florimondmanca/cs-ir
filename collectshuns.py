@@ -9,7 +9,7 @@ from datatypes import TokenStream, TokenDocIDStream
 from resources import load_stop_words
 from utils import find_files, find_dirs
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
 
 
 class Collection:
@@ -109,9 +109,9 @@ class CS276(Collection):
 
     def __init__(self):
         super().__init__()
-        self.dir_name = os.getenv(self.location_env_var)
-        self.token_cache_filename = os.path.join(HERE, ".stanford_tokens.txt")
-        self.doc_map_filename = os.path.join(HERE, ".stanford_doc_map.txt")
+        self.dir_name = os.environ[self.location_env_var]
+        self.token_cache_filename = os.path.join(CACHE, "stanford_tokens.txt")
+        self.doc_map_filename = os.path.join(CACHE, "stanford_doc_map.txt")
 
     def _from_dir(self) -> TokenDocIDStream:
         doc_ids = count(1)
