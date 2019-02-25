@@ -1,6 +1,6 @@
 # CS-IR
 
-This repository is home to the code for an *Information Retrieval* (IR) course project.
+This repository is home to the code for an _Information Retrieval_ (IR) course project.
 
 ## Goal
 
@@ -15,7 +15,7 @@ DATA_STOP_WORDS_PATH=path/to/common_words.txt
 DATA_CACM_PATH=path/to/cacm.all
 ```
 
-- Get [Python] (3.6+) and [Pipenv] and install dependencies:
+- Get [Python](3.6+) and [Pipenv] and install dependencies:
 
 ```bash
 pipenv install
@@ -31,9 +31,21 @@ python main.py
 
 Watch for plots and the output in the console.
 
+## Usage
+
+### Boolean requests
+
+To make a boolean request against a collection, use:
+
+```python
+python -m models.boolean [CACM | Stanford]
+# Example:
+python -m models.boolean CACM
+```
+
 ## Credits
 
 Made by Alexandre de Boutray & Florimond Manca.
 
-[Python]: https://www.python.org
-[Pipenv]: https://pipenv.readthedocs.io
+[python]: https://www.python.org
+[pipenv]: https://pipenv.readthedocs.io
