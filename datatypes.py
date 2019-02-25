@@ -33,7 +33,7 @@ class Index:
         df: Dict[Term, int],
     ):
         self.postings: DefaultDict[Term, PostingList] = defaultdict(
-            int, **postings
+            list, **postings
         )
         self.terms = terms
         self.doc_ids = doc_ids
