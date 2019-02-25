@@ -6,9 +6,11 @@ from contextlib import suppress
 from itertools import count
 from typing import DefaultDict, Dict, Generator, List, Optional, Set
 
+import click
 from dotenv import load_dotenv
 
-from collectshuns import CACM, Collection
+from cli_utils import CollectionType
+from collectshuns import Collection
 from dataclasses import astuple, dataclass
 from datatypes import DocID, PostingList, Term
 from utils import find_files, multi_open
@@ -74,7 +76,7 @@ class Index:
     def build(
         cls, collection: Collection, block_size: int = DEFAULT_BLOCK_SIZE
     ):
-        print("Building {collection.name} index…")
+        print(f"Building index for {collection.name}…")
         with ExternalSorter(block_size) as sorter:
             for token, doc_id in collection:
                 sorter.add(Entry(token, doc_id))
@@ -202,6 +204,7 @@ class ExternalSorter:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Cleaning up blocks…")
         shutil.rmtree(self.temp_path, ignore_errors=True)
 
     def add(self, entry: Entry):
@@ -226,10 +229,13 @@ class ExternalSorter:
         with open(block_path, "w") as f:
             f.writelines([entry.to_line() + "\n" for entry in entries])
 
+        print(f"Flushed: {block_path}")
+
         self._buffer = []
 
     def merge(self) -> List[Entry]:
         """Merge blocks into a single final dictionary."""
+        print("Merging blocks…")
         result: List[Entry] = []
 
         block_paths = [path for _, path in find_files(self.temp_path)]
@@ -254,5 +260,17 @@ class ExternalSorter:
         return result
 
 
+@click.group()
+def indexes():
+    pass
+
+
+@indexes.command()
+@click.argument("collection", type=CollectionType())
+@click.option("--block-size", "-b", default=DEFAULT_BLOCK_SIZE, type=int)
+def build(collection: Collection, block_size: int):
+    build_index(collection, block_size=block_size)
+
+
 if __name__ == "__main__":
-    build_index(CACM(), 10000).to_cache()
+    indexes()
