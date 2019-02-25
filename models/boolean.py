@@ -3,6 +3,7 @@ from typing import List, Callable
 
 import click
 
+from cli_utils import validate_tokenizer
 from datatypes import Index, PostingList, Term
 import tokenizers
 from indexes import build_index
@@ -71,15 +72,6 @@ class Q:
 
     def __str__(self) -> str:
         return f"<Q {self.operations}>"
-
-
-def validate_tokenizer(ctx, param, value: str) -> tokenizers.Tokenizer:
-    try:
-        tokenizer_cls = getattr(tokenizers, value)
-    except AttributeError:
-        raise click.BadParameter(f"No tokenizer named {value} in {tokenizers}")
-    else:
-        return tokenizer_cls()
 
 
 @click.command()

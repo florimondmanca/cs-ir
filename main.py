@@ -1,15 +1,17 @@
 from collections import Counter
 
+import click
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
-import tokenizers
+from cli_utils import validate_tokenizer
+from tokenizers import Tokenizer
 from heaps import estimate, create_heaps
 
 load_dotenv()
 
 
-def main(tokenizer: tokenizers.Tokenizer):
+def main(tokenizer: Tokenizer):
     tokens, doc_ids = zip(*tokenizer)
 
     doc_ids = set(doc_ids)
@@ -67,6 +69,11 @@ def main(tokenizer: tokenizers.Tokenizer):
     plt.show()
 
 
+@click.command()
+@click.argument("tokenizer", callback=validate_tokenizer)
+def cli(tokenizer: Tokenizer):
+    main(tokenizer)
+
+
 if __name__ == "__main__":
-    collection = tokenizers.Stanford
-    main(collection())
+    cli()
