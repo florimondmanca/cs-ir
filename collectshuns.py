@@ -10,6 +10,7 @@ from resources import load_stop_words
 from utils import find_files, find_dirs
 
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+os.makedirs(CACHE, exist_ok=True)
 
 
 class Collection:
