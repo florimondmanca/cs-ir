@@ -15,13 +15,19 @@ DATA_STOP_WORDS_PATH=path/to/common_words.txt
 DATA_CACM_PATH=path/to/cacm.all
 ```
 
-- Get [Python](3.6+) and [Pipenv] and install dependencies:
+- Get [Python] 3.6+ and [Pipenv] and install dependencies:
 
 ```bash
 pipenv install
 ```
 
 ## Usage
+
+Note: make sure you are running within the virtual environment. You can activate it using:
+
+```bash
+pipenv shell
+```
 
 ### Collection inspection
 
