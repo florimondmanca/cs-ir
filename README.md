@@ -1,6 +1,6 @@
 # CS-IR
 
-This repository is home to the code for an *Information Retrieval* (IR) course project.
+This repository is home to the code for an _Information Retrieval_ (IR) course project.
 
 ## Goal
 
@@ -8,32 +8,63 @@ The project aims at implementing various notions of IR such as tokenization, ind
 
 ## Installation
 
-- Place the CACM, CS276 and Stanford datasets on your computer, then create a `.env` file with the following variables:
+- Place the CACM and CS276 datasets on your computer, then create a `.env` file with the following variables:
 
 ```dotenv
 DATA_STOP_WORDS_PATH=path/to/common_words.txt
 DATA_CACM_PATH=path/to/cacm.all
+DATA_CS276_PATH=/path/to/pa1-data
 ```
 
-- Get [Python] (3.6+) and [Pipenv] and install dependencies:
+- Get [Python] 3.6+ and [Pipenv] and install dependencies:
 
 ```bash
 pipenv install
 ```
 
-## Quick start
+## Usage
 
-You can run the main script (but this is bound to change):
+Note: make sure you are running within the virtual environment. You can activate it using:
 
 ```bash
-python main.py
+pipenv shell
 ```
 
-Watch for plots and the output in the console.
+### Collection inspection
+
+To inspect a collection and display its key metrics, run:
+
+```python
+python -m inspectcoll <COLLECTION>
+# Example:
+python -m inspectcoll CACM
+```
+
+### Building indexes
+
+To build an index, run:
+
+```python
+python -m indexes build <COLLECTION>
+# Example:
+python -m indexes build CACM
+```
+
+The index will be stored in the `cache/` directory and re-used when necessary. You can re-build it by running the above command with the `--force` flag.
+
+### Boolean requests
+
+To make a boolean request against a collection, use:
+
+```python
+python -m models.boolean <COLLECTION>
+# Example:
+python -m models.boolean CACM
+```
 
 ## Credits
 
 Made by Alexandre de Boutray & Florimond Manca.
 
-[Python]: https://www.python.org
-[Pipenv]: https://pipenv.readthedocs.io
+[python]: https://www.python.org
+[pipenv]: https://pipenv.readthedocs.io

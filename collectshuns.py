@@ -1,19 +1,22 @@
+# NOTE: this is not named `collections.py` because it would clash
+# with the standard library's `collections` module.
 import os
 import re
 from itertools import count
-from typing import List, Set
+from typing import List
 
 from datatypes import TokenStream, TokenDocIDStream
 from resources import load_stop_words
 from utils import find_files, find_dirs
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+os.makedirs(CACHE, exist_ok=True)
 
 
-class Tokenizer:
-    """Base tokenizer interface.
+class Collection:
+    """Base collection interface.
 
-    A tokenizer is an iterator (in Python sense) that yields a stream
+    A collection is a Python iterator that yields a stream
     of (token, doc_id) pairs.
     """
 
@@ -22,8 +25,21 @@ class Tokenizer:
     def __init__(self):
         self.stop_words = load_stop_words()
 
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__.lower()
+
+    @property
+    def index_cache(self) -> str:
+        """Return the location of the index cache for this collection."""
+        return os.path.join(CACHE, f"{self.name}_index.json")
+
+    @property
+    def index_cache_exists(self) -> bool:
+        return os.path.isfile(self.index_cache)
+
     def tokenize(self, text: str) -> TokenStream:
-        """Separate a text into a set of tokens."""
+        """Separate a text into a stream of tokens."""
         tokens = filter(None, self.NON_ALPHA_NUMERIC.split(text))
         tokens = map(str.lower, tokens)
         return tokens
@@ -32,8 +48,8 @@ class Tokenizer:
         raise NotImplementedError
 
 
-class CACM(Tokenizer):
-    """Tokenizer for the CACM collection."""
+class CACM(Collection):
+    """The CACM collection."""
 
     location_env_var = "DATA_CACM_PATH"
 
@@ -46,11 +62,9 @@ class CACM(Tokenizer):
         self.filename = os.getenv(self.location_env_var)
         self.stop_words = load_stop_words()
 
-    def tokenize(self, text: str, stop_words: Set[str] = None):
-        if stop_words is None:
-            stop_words = self.stop_words
+    def tokenize(self, text: str):
         tokens = super().tokenize(text)
-        tokens = filter(lambda t: t not in stop_words, tokens)
+        tokens = filter(lambda t: t not in self.stop_words, tokens)
         return tokens
 
     def _from_file(self) -> TokenDocIDStream:
@@ -102,14 +116,16 @@ class CACM(Tokenizer):
         yield from self._from_file()
 
 
-class Stanford(Tokenizer):
-    location_env_var = "DATA_STANFORD_PATH"
+class CS276(Collection):
+    """The Stanford CS276 collection."""
+
+    location_env_var = "DATA_CS276_PATH"
 
     def __init__(self):
         super().__init__()
-        self.dir_name = os.getenv(self.location_env_var)
-        self.token_cache_filename = os.path.join(HERE, ".stanford_tokens.txt")
-        self.doc_map_filename = os.path.join(HERE, ".stanford_doc_map.txt")
+        self.dir_name = os.environ[self.location_env_var]
+        self.token_cache_filename = os.path.join(CACHE, "stanford_tokens.txt")
+        self.doc_map_filename = os.path.join(CACHE, "stanford_doc_map.txt")
 
     def _from_dir(self) -> TokenDocIDStream:
         doc_ids = count(1)

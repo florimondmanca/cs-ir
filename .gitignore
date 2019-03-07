@@ -14,7 +14,8 @@ data/
 .env
 
 # Cache
-.stanford_*
+cache/*
+stanford_*
 bisbi-cache/
 output
 
