@@ -14,13 +14,14 @@ from .search import vector_search
 @click.command()
 @click.argument("collection", type=CollectionType())
 @click.argument("query")
-@click.option("--topk", "-k", type=int, default=10)
+@click.option("--topk", "-k", type=int, default=10, show_default=True)
 @click.option(
     "--weighting-scheme",
     "-w",
     "wcs",
     type=WeightingSchemeClassType(SCHEMES),
     default=TfIdfSimple.name,
+    show_default=True,
 )
 def cli(
     collection: Collection, query: str, topk: int, wcs: Type[WeightingScheme]
