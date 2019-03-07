@@ -54,12 +54,24 @@ The index will be stored in the `cache/` directory and re-used when necessary. Y
 
 ### Boolean requests
 
-To make a boolean request against a collection, use:
+To make a boolean request for `algorithm | artifical` against a collection, use:
 
 ```python
 python -m models.boolean <COLLECTION>
 # Example:
 python -m models.boolean CACM
+```
+
+Complete usage:
+
+```bash
+$ python -m models.boolean --help
+Usage: boolean.py [OPTIONS] COLLECTION
+
+  Test the boolean model on a collection.
+
+Options:
+  --help  Show this message and exit.
 ```
 
 ## Credits

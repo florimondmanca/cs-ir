@@ -77,7 +77,10 @@ class Q:
 @click.command()
 @click.argument("collection", type=CollectionType())
 def cli(collection: Collection):
-    """Test the boolean model on a collection."""
+    """Test the boolean model on a collection.
+
+    The query is currently hardcoded: "algorithm | artifical".
+    """
     index = build_index(collection)
 
     query = Q("algorithm") | Q("artifical")
