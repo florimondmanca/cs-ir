@@ -7,7 +7,7 @@ from data_collections import Collection
 from indexes import build_index
 
 from .cli_utils import WeightingSchemeClassType
-from .schemes import SCHEMES, WeightingScheme
+from .schemes import SCHEMES, WeightingScheme, TfIdfSimple
 from .search import vector_search
 
 
@@ -16,7 +16,11 @@ from .search import vector_search
 @click.argument("query")
 @click.option("--topk", "-k", type=int, default=10)
 @click.option(
-    "--weighting-scheme", "-w", "wcs", type=WeightingSchemeClassType(SCHEMES)
+    "--weighting-scheme",
+    "-w",
+    "wcs",
+    type=WeightingSchemeClassType(SCHEMES),
+    default=TfIdfSimple.name,
 )
 def cli(
     collection: Collection, query: str, topk: int, wcs: Type[WeightingScheme]
