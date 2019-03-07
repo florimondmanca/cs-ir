@@ -1,6 +1,7 @@
 import os
 from contextlib import ExitStack, contextmanager
-from typing import Tuple, Generator, List
+from typing import Tuple, Generator, List, Iterable, Any
+from itertools import zip_longest
 
 
 def find_files(root: str) -> Generator[Tuple[str, str], None, None]:
@@ -27,3 +28,14 @@ def multi_open(paths: List[str]):
     # exiting this context.
     with ExitStack() as stack:
         yield [stack.enter_context(open(path)) for path in paths]
+
+
+def grouped(n: int, iterable: Iterable, fillvalue: Any = None):
+    """Group items of an iterable in groups of a most n elements.
+
+    Example
+    -------
+    grouped(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
+    """
+    args = [iter(iterable)] * n
+    return zip_longest(fillvalue=fillvalue, *args)
