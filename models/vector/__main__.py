@@ -25,7 +25,7 @@ from .search import vector_search
 def cli(
     collection: Collection, query: str, topk: int, wcs: Type[WeightingScheme]
 ):
-    """Test the boolean model on a collection."""
+    """Search a collection using the vector model."""
     index = build_index(collection)
 
     click.echo(f"Weighting scheme: {wcs.name}")
