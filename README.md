@@ -57,18 +57,28 @@ The index will be stored in the `cache/` directory and re-used when necessary. Y
 To make a boolean request for `algorithm | artifical` against a collection, use:
 
 ```python
-python -m models.boolean <COLLECTION>
+python -m models.boolean <COLLECTION> <QUERY>
 # Example:
-python -m models.boolean CACM
+python -m models.boolean CACM "Q('algorithm')"
 ```
 
 Complete usage:
 
 ```bash
 $ python -m models.boolean --help
-Usage: boolean.py [OPTIONS] COLLECTION
+Usage: __main__.py [OPTIONS] COLLECTION QUERY
 
-  Test the boolean model on a collection.
+  Request a collection using the boolean model.
+
+  The query must be a valid Python expression comprised of terms wrapped in
+  a `Q` object, and combined using the `|` (OR), `&` (AND) or `~` (NOT)
+  operators.
+
+  Examples:
+
+    "Q('research')" => research     "Q('algorithm') | Q('artificial')" =>
+    algorithm OR artificial     "Q('France') & ~Q('Paris')" => France AND
+    NOT Paris
 
 Options:
   --help  Show this message and exit.

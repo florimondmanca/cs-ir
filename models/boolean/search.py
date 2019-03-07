@@ -54,7 +54,7 @@ class Q:
         """
 
         def not_(left: PostingList, index: Index) -> PostingList:
-            return sorted(index.doc_ids - set(left))
+            return sorted(set(index.doc_ids) - set(left))
 
         self.operations.append(not_)
         return self

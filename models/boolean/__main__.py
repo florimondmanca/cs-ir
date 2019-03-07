@@ -12,9 +12,17 @@ from .search import Q
 @click.argument("collection", type=CollectionType())
 @click.argument("query", type=BooleanQueryType())
 def cli(collection: Collection, query: Q):
-    """Test the boolean model on a collection.
+    """Request a collection using the boolean model.
 
-    The query is currently hardcoded: "algorithm | artifical".
+    The query must be a valid Python expression comprised of terms wrapped
+    in a `Q` object, and combined using the `|` (OR), `&` (AND) or `~` (NOT)
+    operators.
+
+    Examples:
+
+        "Q('research')" => research
+        "Q('algorithm') | Q('artificial')" => algorithm OR artificial
+        "Q('France') & ~Q('Paris')" => France AND NOT Paris
     """
     index = build_index(collection)
 
