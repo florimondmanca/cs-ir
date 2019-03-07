@@ -6,7 +6,7 @@ from typing import List, Dict, Type, Union
 
 from datatypes import DocID, Term, PostingList
 from indexes import Index
-from collectshuns import Collection
+from data_collections import Collection
 
 
 class WeightingScheme:

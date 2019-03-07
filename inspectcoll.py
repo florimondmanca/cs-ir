@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
 from cli_utils import CollectionType
-from collectshuns import Collection
+from data_collections import Collection
 from heaps import estimate, create_heaps
 
 load_dotenv()

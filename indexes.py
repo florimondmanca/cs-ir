@@ -10,7 +10,7 @@ import click
 from dotenv import load_dotenv
 
 from cli_utils import CollectionType
-from collectshuns import Collection
+from data_collections import Collection
 from dataclasses import astuple, dataclass
 from datatypes import DocID, PostingList, Term
 from utils import find_files, multi_open

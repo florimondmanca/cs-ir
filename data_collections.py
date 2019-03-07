@@ -1,5 +1,3 @@
-# NOTE: this is not named `collections.py` because it would clash
-# with the standard library's `collections` module.
 import os
 import re
 from itertools import count

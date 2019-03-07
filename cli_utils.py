@@ -1,6 +1,6 @@
 import click
 
-import collectshuns
+import data_collections
 
 
 class CollectionType(click.ParamType):
@@ -8,12 +8,12 @@ class CollectionType(click.ParamType):
     name = "collection"
 
     def convert(self, value, param, ctx):
-        getattr(collectshuns, "CACM")
+        getattr(data_collections, "CACM")
         try:
-            cls = getattr(collectshuns, value)
+            cls = getattr(data_collections, value)
         except AttributeError:
             raise click.BadParameter(
-                f"Collection {value} not found in {collectshuns}"
+                f"Collection {value} not found in {data_collections}"
             )
         else:
             return cls()

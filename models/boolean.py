@@ -5,7 +5,7 @@ import click
 
 from cli_utils import CollectionType
 from datatypes import PostingList, Term
-from collectshuns import Collection
+from data_collections import Collection
 from indexes import build_index, Index
 
 Operation = Callable[[PostingList, Index], PostingList]
