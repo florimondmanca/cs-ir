@@ -1,12 +1,8 @@
 """Boolean request model implementation."""
 from typing import List, Callable
 
-import click
-
-from cli_utils import CollectionType
 from datatypes import PostingList, Term
-from data_collections import Collection
-from indexes import build_index, Index
+from indexes import Index
 
 Operation = Callable[[PostingList, Index], PostingList]
 
@@ -72,23 +68,3 @@ class Q:
 
     def __str__(self) -> str:
         return f"<Q {self.operations}>"
-
-
-@click.command()
-@click.argument("collection", type=CollectionType())
-def cli(collection: Collection):
-    """Test the boolean model on a collection.
-
-    The query is currently hardcoded: "algorithm | artifical".
-    """
-    index = build_index(collection)
-
-    query = Q("algorithm") | Q("artifical")
-    click.echo(f"Executing {query}...")
-    results = query(index)
-
-    click.echo(results)
-
-
-if __name__ == "__main__":
-    cli()
