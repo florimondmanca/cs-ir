@@ -17,3 +17,20 @@ class CollectionType(click.ParamType):
             )
         else:
             return cls()
+
+
+class WeightingSchemeClassType(click.ParamType):
+
+    name = "wcs"
+
+    def __init__(self, schemes):
+        super().__init__()
+        self.schemes = schemes
+
+    def convert(self, value, param, ctx):
+        try:
+            scheme = self.schemes[value]
+        except KeyError:
+            raise click.BadParameter(f"Unknown weighting scheme: {value}")
+        else:
+            return scheme
