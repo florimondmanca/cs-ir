@@ -2,7 +2,6 @@ import json
 import os
 import shutil
 from collections import defaultdict
-from contextlib import suppress
 from itertools import count
 from typing import DefaultDict, Dict, Generator, List, Optional, Set
 
@@ -13,7 +12,7 @@ from cli_utils import CollectionType
 from data_collections import Collection
 from dataclasses import astuple, dataclass
 from datatypes import DocID, PostingList, Term
-from utils import find_files, multi_open
+from utils import find_files, multi_open, grouped
 
 load_dotenv()
 
@@ -212,7 +211,7 @@ class ExternalSorter:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Cleaning up blocks…")
+        print("Cleaning up…")
         shutil.rmtree(self.temp_path, ignore_errors=True)
 
     def add(self, entry: Entry):
@@ -241,31 +240,70 @@ class ExternalSorter:
 
         self._buffer = []
 
-    def merge(self) -> List[Entry]:
-        """Merge blocks into a single final dictionary."""
-        print("Merging blocks…")
-        result: List[Entry] = []
+    def _merge(self, out: str, *block_paths: str) -> None:
+        print("merging", block_paths, "into", out)
 
-        block_paths = [path for _, path in find_files(self.temp_path)]
-        with multi_open(block_paths) as files:
+        with multi_open(block_paths) as files, open(out, "w") as out_file:
             blocks = [read_block(f) for f in files]
 
-            # A list of the entry to be merged from each (sorted) block.
+            # A list of pointers to the next entry to be merged from
+            # each (sorted) block.
             # `None` means that the block has been merged completely.
-            entries = [next(block, None) for block in blocks]
+            entry_pointers: List[Optional[Entry]] = [
+                next(block, None) for block in blocks
+            ]
 
-            while any(entries):
-                # Find entry of smallest value
+            while any(entry_pointers):
+                # Find entry of "smallest" entry in terms of token and docID.
                 idx, smallest = min(
                     (i, entry)
-                    for i, entry in enumerate(entries)
+                    for i, entry in enumerate(entry_pointers)
                     if entry is not None
                 )
-                result.append(smallest)
-                # Read next entry in block of smallest entry
-                entries[idx] = next(blocks[idx], None)
 
-        return result
+                # Write it to the output file.
+                out_file.write(smallest.to_line())
+
+                # Advance the entry pointer in the corresponding block.
+                entry_pointers[idx] = next(blocks[idx], None)
+
+        for block_path in block_paths:
+            os.remove(block_path)
+
+    def merge(self, batch_size: int = 100, _step: int = 0) -> List[Entry]:
+        """Merge blocks into a single final list of entries.
+
+        Blocks are batched in groups and merged recursively.
+
+        Parameters
+        ----------
+        batch_size : int, optional
+            The number of blocks in a merge batch. Defaults to 100.
+        _step : int, optional
+            Private parameter corresponding to the current processing stage.
+        """
+        block_paths = [path for _, path in find_files(self.temp_path)]
+
+        if len(block_paths) == 1:
+            # Only one block remaining => we're done.
+            # Read the entries from it.
+            last_block_path = block_paths[0]
+            with open(last_block_path) as f:
+                return list(read_block(f))
+
+        # Otherwise, batch blocks together and merge each of them into a
+        # new block.
+        for idx, batch in enumerate(grouped(batch_size, block_paths)):
+            # The last `batch` may be end-padded with nones if the
+            # number of items in `block_paths` is not a multiple of
+            # `batch_size`.
+            batch = filter(None, batch)
+
+            out_path = os.path.join(self.temp_path, f"{_step}-{idx}")
+            self._merge(out_path, *batch)
+
+        # Merge the new blocks recursively.
+        return self.merge(batch_size=batch_size, _step=_step + 1)
 
 
 @click.group()
