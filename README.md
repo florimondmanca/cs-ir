@@ -74,6 +74,30 @@ Options:
   --help  Show this message and exit.
 ```
 
+### Vector requests
+
+To make a request against a collection using the vector model, use:
+
+```python
+python -m models.boolean <COLLECTION> <QUERY>
+# Example:
+python -m models.boolean CACM "search algorithm"
+```
+
+Complete usage:
+
+```bash
+$ python -m models.vector --help
+Usage: __main__.py [OPTIONS] COLLECTION QUERY
+
+  Search a collection using the vector model.
+
+Options:
+  -k, --topk INTEGER          [default: 10]
+  -w, --weighting-scheme WCS  [default: simple]
+  --help                      Show this message and exit.
+```
+
 ## Credits
 
 Made by Alexandre de Boutray & Florimond Manca.
