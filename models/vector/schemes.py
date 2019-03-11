@@ -121,3 +121,4 @@ SCHEMES: Dict[str, Type[WeightingScheme]] = {}
 
 for _wcs in (TfIdfSimple, TfIdfComplex):
     SCHEMES[_wcs.name] = _wcs
+

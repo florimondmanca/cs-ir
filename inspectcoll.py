@@ -8,6 +8,8 @@ from cli_utils import CollectionType
 from data_collections import Collection
 from heaps import estimate, create_heaps
 
+from evaluation import evaluate_performance
+
 load_dotenv()
 
 
@@ -81,6 +83,9 @@ def cli(collection: Collection):
     ax2.loglog(r, f)
 
     plt.show()
+
+    # Evaluation
+    evaluate_performance(collection)
 
 
 if __name__ == "__main__":
