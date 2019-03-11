@@ -89,9 +89,9 @@ Options:
 To make a request against a collection using the vector model, use:
 
 ```python
-python -m models.boolean <COLLECTION> <QUERY>
+python -m models.vector <COLLECTION> <QUERY>
 # Example:
-python -m models.boolean CACM "search algorithm"
+python -m models.vector CACM "search algorithm"
 ```
 
 Complete usage:
