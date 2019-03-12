@@ -40,14 +40,16 @@ def plot(collection: Collection):
     precisions = []
     recalls = []
 
-    for k in range(1, 11):
+    for k in range(1, 31):
         found = [set(vector_search(query, index, k=k)) for query in queries]
         precision, recall = precision_recall(found, answers)
         print("k:", k, "precision:", precision, "recall:", recall)
         precisions.append(precision)
         recalls.append(recall)
 
-    plt.plot(precisions, recalls)
+    plt.plot(precisions, recalls, label="precision")
+    plt.plot(recalls, precisions, label="recall")
+    plt.legend()
     plt.show()
 
 
