@@ -13,6 +13,8 @@ The project aims at implementing various notions of IR such as tokenization, ind
 ```dotenv
 DATA_STOP_WORDS_PATH=path/to/common_words.txt
 DATA_CACM_PATH=path/to/cacm.all
+DATA_CACM_QUERIES=path/to/query.text
+DATA_CACM_QRELS=path/to/qrels.text
 DATA_CS276_PATH=/path/to/pa1-data
 ```
 
