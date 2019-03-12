@@ -13,7 +13,7 @@ from models.vector import cli as vector_cli
 from models.vector import vector_search
 from utils import Timer
 
-from .evaluation import precision_recall, parse_answers, parse_requests
+from .evaluation import precision_recall, parse_answers, parse_queries
 
 
 @click.group()
@@ -31,8 +31,8 @@ def plot(collection: Collection):
     """Plot the precision-recall curve for a collection."""
     header("Vector search precision-recall curve")
 
-    queries = parse_requests(os.getenv("DATA_CACM_QUERIES"))
-    answers = parse_answers(os.getenv("DATA_CACM_QRELS"))
+    queries: dict = parse_queries(os.getenv("DATA_CACM_QUERIES"))
+    answers: dict = parse_answers(os.getenv("DATA_CACM_QRELS"))
     index = build_index(collection)
 
     click.echo("Computing precision and recall values…")
@@ -41,7 +41,10 @@ def plot(collection: Collection):
     recalls = []
 
     for k in range(1, 11):
-        found = [set(vector_search(query, index, k=k)) for query in queries]
+        found: dict = {
+            query_id: set(vector_search(query, index, k=k))
+            for query_id, query in queries.items()
+        }
         precision, recall = precision_recall(found, answers)
         print("k:", k, "precision:", precision, "recall:", recall)
         precisions.append(precision)
