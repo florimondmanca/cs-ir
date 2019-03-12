@@ -2,6 +2,7 @@ import os
 from contextlib import ExitStack, contextmanager
 from typing import Tuple, Generator, List, Iterable, Any
 from itertools import zip_longest
+import time
 
 
 def find_files(root: str) -> Generator[Tuple[str, str], None, None]:
@@ -39,3 +40,20 @@ def grouped(n: int, iterable: Iterable, fillvalue: Any = None):
     """
     args = [iter(iterable)] * n
     return zip_longest(fillvalue=fillvalue, *args)
+
+
+class Timer:
+    def __init__(self):
+        self.start = None
+        self.end = None
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+
+    @property
+    def total(self):
+        return self.end - self.start

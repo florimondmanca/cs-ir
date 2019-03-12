@@ -8,14 +8,19 @@ from cli_utils import CollectionType
 from data_collections import Collection
 from heaps import estimate, create_heaps
 
+<<<<<<< HEAD
 from evaluation import evaluate_performance, evaluate_relevancy
+=======
+from evaluation.cli import cli as eval_cli
+>>>>>>> 4a17f610dc86934ba0032f97282d35a910ddfa5f
 
 load_dotenv()
 
 
 @click.command()
 @click.argument("collection", type=CollectionType())
-def cli(collection: Collection):
+@click.pass_context
+def cli(ctx: click.Context, collection: Collection):
     """Inspect a collection and display key metrics.
 
     - Number of documents
@@ -85,8 +90,7 @@ def cli(collection: Collection):
     plt.show()
 
     # Evaluation
-    evaluate_performance(collection)
-    evaluate_relevancy(collection)
+    ctx.invoke(eval_cli.get_command("showperfs"), collection=collection)
 
 
 if __name__ == "__main__":
