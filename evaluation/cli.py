@@ -4,7 +4,7 @@ import click
 import matplotlib.pyplot as plt
 
 from cli_utils import CollectionType
-from data_collections import Collection
+from data_collections import Collection, CACM
 from indexes import build_index
 from indexes import cli as indexes_cli
 from models.boolean import Q
@@ -13,7 +13,7 @@ from models.vector import cli as vector_cli
 from models.vector import vector_search
 from utils import Timer
 
-from .evaluation import precision_recall, parse_answers, parse_requests
+from .evaluation import precision_recall, parse_answers, parse_queries
 
 
 @click.group()
@@ -25,14 +25,22 @@ def header(content: str):
     click.echo(click.style("\n" + content.center(40, "-") + "\n", fg="red"))
 
 
+def get_queries() -> dict:
+    return parse_queries(os.getenv("DATA_CACM_QUERIES"))
+
+
+def get_answers() -> dict:
+    return parse_answers(os.getenv("DATA_CACM_QRELS"))
+
+
 @cli.command()
-@click.argument("collection", type=CollectionType())
-def plot(collection: Collection):
-    """Plot the precision-recall curve for a collection."""
+def plot():
+    """Plot the precision-recall curve for the CACM collection."""
     header("Vector search precision-recall curve")
 
-    queries = parse_requests(os.getenv("DATA_CACM_QUERIES"))
-    answers = parse_answers(os.getenv("DATA_CACM_QRELS"))
+    collection = CACM()
+    queries = get_queries()
+    answers = get_answers()
     index = build_index(collection)
 
     click.echo("Computing precision and recall values…")
@@ -41,7 +49,10 @@ def plot(collection: Collection):
     recalls = []
 
     for k in range(1, 31):
-        found = [set(vector_search(query, index, k=k)) for query in queries]
+        found: dict = {
+            query_id: set(vector_search(query, index, k=k))
+            for query_id, query in queries.items()
+        }
         precision, recall = precision_recall(found, answers)
         print("k:", k, "precision:", precision, "recall:", recall)
         precisions.append(precision)
@@ -51,6 +62,26 @@ def plot(collection: Collection):
     plt.plot(recalls, precisions, label="recall")
     plt.legend()
     plt.show()
+
+
+@cli.command()
+def rprec():
+    """Compute the R-precision for queries on the CACM collection."""
+    collection = CACM()
+    header(f"R-precision for the {collection.name} collection")
+
+    queries, answers = get_queries(), get_answers()
+    index = build_index(collection)
+
+    for query_id, query in queries.items():
+        q_answers: set = answers.get(query_id, [])
+        r = len(q_answers)
+        results = vector_search(query, index, k=r)
+        relevant = len(
+            [result_id for result_id in results[:r] if result_id in q_answers]
+        )
+        prec = relevant / r if r else float("inf")
+        click.echo(f"query {query_id}: {r}-precision = {prec}")
 
 
 @cli.command()

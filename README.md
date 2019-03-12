@@ -128,6 +128,18 @@ General performance indicators (index build time, request execution time, index 
 $ python -m evaluation showperfs <COLLECTION>
 ```
 
+Plot the precision-recall curve for the CACM collection:
+
+```bash
+$ python -m evaluation plot
+```
+
+R-precision computed on queries for the CACM collection:
+
+```bash
+$ python -m evaluation rprec
+```
+
 ## Credits
 
 Made by Alexandre de Boutray & Florimond Manca.
