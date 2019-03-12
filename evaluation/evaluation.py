@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Tuple
 
 QUERY_REGEX = re.compile(r"^\.(?P<section>W)$")
 SECTION_REGEX = re.compile(r"^\.(?P<section>\w)$")
@@ -40,11 +40,15 @@ def parse_answers(path: str) -> List[str]:
     return answers
 
 
-def evaluate_requests(found_ids: List[set], target_ids: List[set]):
-    precision = sum(
-        [len(fids & tids) for fids, tids in zip(found_ids, target_ids)]
-    ) / sum([len(fids) for fids in found_ids])
-    rappel = sum(
-        [len(fids & tids) for fids, tids in zip(found_ids, target_ids)]
-    ) / sum([len(tids) for tids in target_ids])
-    return precision, rappel
+def precision_recall(
+    found: List[set], answers: List[set]
+) -> Tuple[float, float]:
+    def count(sets):
+        return sum(len(s) for s in sets)
+
+    found_answers = [f & a for f, a in zip(found, answers)]
+
+    precision = count(found_answers) / count(found)
+    recall = count(found_answers) / count(answers)
+
+    return precision, recall
