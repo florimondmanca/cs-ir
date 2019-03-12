@@ -1,52 +1,74 @@
-from time import time
-from indexes import build_index
-import click
-from models.boolean.search import Q
-from models.vector.search import vector_search
-import os
 import re
 
-def evaluate_performance(collection):
-    # Index build time
-    t0 = time()
-    index = build_index(collection, no_cache=True)
-    t1 = time()
-    click.echo("Index build time: {time:.6f}s".format(time=(t1-t0)))
+import click
 
-    # Query response time
-    t0 = time()
-    query = Q("algorithm") | Q("artifical")
-    click.echo(f"Executing {query}...")
-    results = query(index)
-    t1 = time()
+from cli_utils import CollectionType
+from data_collections import Collection
+from indexes import cli as indexes_cli
+from models.boolean import Q, cli as boolean_cli
+from models.vector import cli as vector_cli
+from utils import Timer
 
-    click.echo(results)
-    click.echo("Results found in {time:.6f}s".format(time=(t1-t0)))
 
-    t0 = time()
-    query = "algorithm artificial"
-    click.echo(f"Executing query \"{query}\"...")
-    results = vector_search(query, index)
-    t1 = time()
+@click.group()
+def cli():
+    pass
 
-    click.echo(results)
-    click.echo("Results found in {time:.6f}s".format(time=(t1-t0)))
 
-    # Disk space
-    for file in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")):
-        click.echo("{file} ---- {file_size:.3f}MB".format(file=file, file_size=(os.stat(os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", file)).st_size >> 20)))
-        click.echo(os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", file))
-    
+def header(content: str):
+    click.echo(click.style("\n" + content.center(40, "-") + "\n", fg="red"))
+
+
+@cli.command()
+@click.argument("collection", type=CollectionType())
+@click.option("-i", "--index", is_flag=True, default=False)
+@click.pass_context
+def showperfs(ctx: click.Context, collection: Collection, index: bool):
+    click.echo(click.style(f"Collection: {collection.name}", fg="blue"))
+
+    if index:
+        header("Index build time")
+        with Timer() as timer:
+            ctx.invoke(
+                indexes_cli.get_command(ctx, "build"),
+                collection=collection,
+                force=True,
+            )
+        click.echo(f"Index build time: {timer.total:.6f}s")
+
+    header("Boolean request execution time")
+    with Timer() as timer:
+        ctx.invoke(
+            boolean_cli,
+            collection=collection,
+            query=Q("algorithm") | Q("artifical"),
+        )
+    click.echo(f"{timer.total:.6f}s")
+
+    header("Vector request execution time")
+    with Timer() as timer:
+        ctx.invoke(
+            vector_cli, collection=collection, query="algorithm artificial"
+        )
+    click.echo(f"{timer.total:.6f}s")
+
+    header("Index size")
+    ctx.invoke(indexes_cli.get_command(ctx, "size"), collection=collection)
+
 
 def evaluate_relevancy(collection):
     click.echo("Evaluating vector search...")
+    # TODO
+
+
+QUERY_REGEX = re.compile(r"^\.(?P<section>W)$")
+SECTION_REGEX = re.compile(r"^\.(?P<section>\w)$")
+
 
 def get_requests(file):
-    QUERY_REGEX = re.compile(r"^\.(?P<section>W)$")
-    SECTION_REGEX = re.compile(r"^\.(?P<section>\w)$")
     requests = []
     querying = False
-    with open(file, 'r') as f:
+    with open(file, "r") as f:
         for line in f:
             if QUERY_REGEX.match(line):
                 lines = []
@@ -57,4 +79,7 @@ def get_requests(file):
             elif querying:
                 lines.append(line)
     return requests
-    
+
+
+if __name__ == "__main__":
+    cli()

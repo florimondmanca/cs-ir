@@ -307,11 +307,11 @@ class ExternalSorter:
 
 
 @click.group()
-def indexes():
+def cli():
     pass
 
 
-@indexes.command()
+@cli.command()
 @click.argument("collection", type=CollectionType())
 @click.option("--block-size", "-b", default=DEFAULT_BLOCK_SIZE, type=int)
 @click.option("--force", is_flag=True)
@@ -334,5 +334,12 @@ def build(collection: Collection, block_size: int, force: bool):
     click.echo(click.style("Done!", fg="green"))
 
 
+@cli.command()
+@click.argument("collection", type=CollectionType())
+def size(collection):
+    filesize = os.stat(collection.index_cache).st_size / 2 ** 20
+    click.echo(f"{collection.index_cache} --- {filesize:.3f}MB")
+
+
 if __name__ == "__main__":
-    indexes()
+    cli()
