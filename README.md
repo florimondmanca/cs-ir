@@ -142,6 +142,12 @@ R-precision computed on queries for the CACM collection:
 $ python -m evaluation rprec
 ```
 
+F-measure and E-measure for the CACM collection:
+
+```bash
+$ python -m evaluation fe
+```
+
 ## Credits
 
 Made by Alexandre de Boutray & Florimond Manca.
