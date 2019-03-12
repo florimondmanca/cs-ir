@@ -1,13 +1,19 @@
-import re
+import os
 
 import click
+import matplotlib.pyplot as plt
 
 from cli_utils import CollectionType
 from data_collections import Collection
+from indexes import build_index
 from indexes import cli as indexes_cli
-from models.boolean import Q, cli as boolean_cli
+from models.boolean import Q
+from models.boolean import cli as boolean_cli
 from models.vector import cli as vector_cli
+from models.vector import vector_search
 from utils import Timer
+
+from .evaluation import evaluate_requests, parse_answers, parse_requests
 
 
 @click.group()
@@ -17,6 +23,29 @@ def cli():
 
 def header(content: str):
     click.echo(click.style("\n" + content.center(40, "-") + "\n", fg="red"))
+
+
+@cli.command()
+@click.argument("collection", type=CollectionType())
+def plot(collection: Collection):
+    """Plot the precision-recall curve for a collection."""
+    header("Vector search evaluation")
+
+    queries = parse_requests(os.getenv("DATA_CACM_QUERIES"))
+    target_results = parse_answers(os.getenv("DATA_CACM_QRELS"))
+    index = build_index(collection)
+
+    precisions = []
+    recalls = []
+
+    for k in range(1, 11):
+        results = [set(vector_search(query, index, k)) for query in queries]
+        precision, recall = evaluate_requests(results, target_results)
+        precisions.append(precision)
+        recalls.append(recall)
+
+    plt.plot(precisions, recalls)
+    plt.show()
 
 
 @cli.command()
@@ -54,31 +83,6 @@ def showperfs(ctx: click.Context, collection: Collection, index: bool):
 
     header("Index size")
     ctx.invoke(indexes_cli.get_command(ctx, "size"), collection=collection)
-
-
-def evaluate_relevancy(collection):
-    click.echo("Evaluating vector search...")
-    # TODO
-
-
-QUERY_REGEX = re.compile(r"^\.(?P<section>W)$")
-SECTION_REGEX = re.compile(r"^\.(?P<section>\w)$")
-
-
-def get_requests(file):
-    requests = []
-    querying = False
-    with open(file, "r") as f:
-        for line in f:
-            if QUERY_REGEX.match(line):
-                lines = []
-                querying = True
-            elif SECTION_REGEX.match(line) and querying:
-                requests.append(" ".join(lines))
-                querying = False
-            elif querying:
-                lines.append(line)
-    return requests
 
 
 if __name__ == "__main__":
