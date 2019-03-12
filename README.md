@@ -30,35 +30,43 @@ Note: make sure you are running within the virtual environment. You can activate
 pipenv shell
 ```
 
+Notations: in the following `<COLLECTION>` refers to either `CACM` or `CS276`.
+
 ### Collection inspection
 
 To inspect a collection and display its key metrics, run:
 
-```python
+```bash
 python -m inspectcoll <COLLECTION>
-# Example:
-python -m inspectcoll CACM
 ```
 
 ### Building indexes
 
 To build an index, run:
 
-```python
+```bash
 python -m indexes build <COLLECTION>
-# Example:
-python -m indexes build CACM
 ```
 
 The index will be stored in the `cache/` directory and re-used when necessary. You can re-build it by running the above command with the `--force` flag.
+
+Show the size of the index using:
+
+```bash
+python -m indexes size <COLLECTION>
+```
 
 ### Boolean requests
 
 To make a boolean request for `algorithm | artifical` against a collection, use:
 
-```python
+```bash
 python -m models.boolean <COLLECTION> <QUERY>
-# Example:
+```
+
+Example:
+
+```bash
 python -m models.boolean CACM "Q('algorithm')"
 ```
 
@@ -76,9 +84,9 @@ Usage: __main__.py [OPTIONS] COLLECTION QUERY
 
   Examples:
 
-    "Q('research')" => research     "Q('algorithm') | Q('artificial')" =>
-    algorithm OR artificial     "Q('France') & ~Q('Paris')" => France AND
-    NOT Paris
+    "Q('research')" => research
+    "Q('algorithm') | Q('artificial')" => algorithm OR artificial
+    "Q('France') & ~Q('Paris')" => France AND NOT Paris
 
 Options:
   --help  Show this message and exit.
@@ -88,9 +96,13 @@ Options:
 
 To make a request against a collection using the vector model, use:
 
-```python
+```bash
 python -m models.vector <COLLECTION> <QUERY>
-# Example:
+```
+
+Example:
+
+```bash
 python -m models.vector CACM "search algorithm"
 ```
 
@@ -106,6 +118,14 @@ Options:
   -k, --topk INTEGER          [default: 10]
   -w, --weighting-scheme WCS  [default: simple]
   --help                      Show this message and exit.
+```
+
+### Evaluation
+
+General performance indicators (index build time, request execution time, index size):
+
+```bash
+$ python -m evaluation showperfs <COLLECTION>
 ```
 
 ## Credits
