@@ -4,6 +4,7 @@ import click
 from models.boolean.search import Q
 from models.vector.search import vector_search
 import os
+import re
 
 def evaluate_performance(collection):
     # Index build time
@@ -37,3 +38,23 @@ def evaluate_performance(collection):
         click.echo(os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", file))
     
 
+def evaluate_relevancy(collection):
+    click.echo("Evaluating vector search...")
+
+def get_requests(file):
+    QUERY_REGEX = re.compile(r"^\.(?P<section>W)$")
+    SECTION_REGEX = re.compile(r"^\.(?P<section>\w)$")
+    requests = []
+    querying = False
+    with open(file, 'r') as f:
+        for line in f:
+            if QUERY_REGEX.match(line):
+                lines = []
+                querying = True
+            elif SECTION_REGEX.match(line) and querying:
+                requests.append(" ".join(lines))
+                querying = False
+            elif querying:
+                lines.append(line)
+    return requests
+    

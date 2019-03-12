@@ -8,7 +8,7 @@ from cli_utils import CollectionType
 from data_collections import Collection
 from heaps import estimate, create_heaps
 
-from evaluation import evaluate_performance
+from evaluation import evaluate_performance, get_requests
 
 load_dotenv()
 
