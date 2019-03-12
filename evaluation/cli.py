@@ -14,6 +14,7 @@ from models.vector import vector_search
 from utils import Timer
 
 from .evaluation import precision_recall, parse_answers, parse_queries
+from .measures import f_measure, e_measure
 
 
 @click.group()
@@ -81,6 +82,30 @@ def rprec():
         prec = relevant / r if r else float("inf")
         click.echo(f"query {query_id}: {r}-precision = {prec}")
 
+
+@cli.command()
+def fe():
+    """Show the F- and E-measure on the CACM collection."""
+    collection = CACM()
+    queries, answers = get_queries(), get_answers()
+    index = build_index(collection)
+
+    click.echo("Computing precision and recall…")
+    found: dict = {
+        query_id: set(vector_search(query, index, k=10))
+        for query_id, query in queries.items()
+    }
+    precision, recall = precision_recall(found, answers)
+    click.echo(f"Precision: {precision}")
+    click.echo(f"Recall: {recall}")
+
+    f = f_measure(precision, recall)
+    e = e_measure(precision, recall)
+    b = precision / recall
+
+    click.echo(f"F-measure: {f:.2f}")
+    click.echo(f"E-measure: {e:.2f}")
+    click.echo(f"ß (= P/R): {b:.2f}")
 
 @cli.command()
 @click.argument("collection", type=CollectionType())
