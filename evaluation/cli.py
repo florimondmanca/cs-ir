@@ -2,6 +2,7 @@ import os
 
 import click
 import matplotlib.pyplot as plt
+import json
 
 from cli_utils import CollectionType
 from data_collections import Collection, CACM
@@ -13,7 +14,7 @@ from models.vector import cli as vector_cli
 from models.vector import vector_search
 from utils import Timer
 
-from .evaluation import precision_recall, parse_answers, parse_queries
+from .evaluation import precision_recall, parse_answers, parse_queries, interpolate
 from .measures import f_measure, e_measure
 
 
@@ -46,21 +47,45 @@ def plot():
 
     click.echo("Computing precision and recall values…")
 
-    precisions = []
-    recalls = []
+    precisions = {}
 
-    for k in range(1, 51):
-        found: dict = {
-            query_id: set(vector_search(query, index, k=k))
-            for query_id, query in queries.items()
+    found: dict = {
+        query_id: vector_search(query, index, k=50)
+        for query_id, query in queries.items()
+        if answers.get(query_id)
+    }
+
+    for i, fids in found.items():
+        precisions[i] = {}
+        for j, fid in enumerate(fids):
+            if fid in answers.get(i):
+                precision, recall = precision_recall(set(fids[: j + 1]), answers.get(i))
+                precisions[i][recall] = precision
+
+    int_precisions = {
+        i: interpolate(11, iprecisions) for i, iprecisions in precisions.items()
+    }
+    avg_int_precisions = [
+        {
+            "recall": recall,
+            "precision": sum(
+                [
+                    iprecisions[recall] / len(int_precisions)
+                    for _, iprecisions in int_precisions.items()
+                ]
+            ),
         }
-        precision, recall = precision_recall(found, answers)
-        print("k:", k, "precision:", precision, "recall:", recall)
-        precisions.append(precision)
-        recalls.append(recall)
+        for recall in int_precisions[1].keys()
+    ]
 
-    plt.plot(precisions, recalls, label="recall")
-    plt.plot(recalls, precisions, label="precision")
+    click.echo(json.dumps(precisions[2], indent=2, separators=(",", ": ")))
+    click.echo(json.dumps(int_precisions[2], indent=2, separators=(",", ": ")))
+    click.echo(json.dumps(avg_int_precisions, indent=2, separators=(",", ": ")))
+
+    plt.plot(
+        [i["recall"] for i in avg_int_precisions],
+        [i["precision"] for i in avg_int_precisions],
+    )
     plt.legend()
     plt.show()
 
@@ -109,6 +134,7 @@ def fe():
     click.echo(f"E-measure: {e:.2f}")
     click.echo(f"ß (= P/R): {b:.2f}")
 
+
 @cli.command()
 @click.argument("collection", type=CollectionType())
 @click.option("-i", "--index", is_flag=True, default=False)
@@ -120,26 +146,20 @@ def showperfs(ctx: click.Context, collection: Collection, index: bool):
         header("Index build time")
         with Timer() as timer:
             ctx.invoke(
-                indexes_cli.get_command(ctx, "build"),
-                collection=collection,
-                force=True,
+                indexes_cli.get_command(ctx, "build"), collection=collection, force=True
             )
         click.echo(f"Index build time: {timer.total:.6f}s")
 
     header("Boolean request execution time")
     with Timer() as timer:
         ctx.invoke(
-            boolean_cli,
-            collection=collection,
-            query=Q("algorithm") | Q("artifical"),
+            boolean_cli, collection=collection, query=Q("algorithm") | Q("artifical")
         )
     click.echo(f"{timer.total:.6f}s")
 
     header("Vector request execution time")
     with Timer() as timer:
-        ctx.invoke(
-            vector_cli, collection=collection, query="algorithm artificial"
-        )
+        ctx.invoke(vector_cli, collection=collection, query="algorithm artificial")
     click.echo(f"{timer.total:.6f}s")
 
     header("Index size")

@@ -47,19 +47,26 @@ def parse_answers(path: str) -> Dict[int, set]:
     return answers
 
 
-def precision_recall(
-    found: Dict[int, set], answers: Dict[int, set]
-) -> Tuple[float, float]:
+def precision_recall(found: set, answers: set) -> Tuple[float, float]:
 
-    found = list(found.values())
-    answers = list(answers.values())
+    found_answers = found & answers
 
-    def count(sets):
-        return sum(len(s) for s in sets)
-
-    found_answers = [f & a for f, a in zip(found, answers)]
-
-    precision = count(found_answers) / count(found)
-    recall = count(found_answers) / count(answers)
+    precision = len(found_answers) / len(found)
+    recall = len(found_answers) / len(answers)
 
     return precision, recall
+
+
+def interpolate(nb_levels: int, precisions: Dict[float, float]):
+    results = {}
+    for k in range(nb_levels):
+        candidates = {
+            precision
+            for recall, precision in precisions.items()
+            if recall >= k / (nb_levels - 1)
+        }
+        if len(candidates) != 0:
+            results[k / (nb_levels - 1)] = max(candidates)
+        else:
+            results[k / (nb_levels - 1)] = 0
+    return results
