@@ -2,7 +2,6 @@ import os
 
 import click
 import matplotlib.pyplot as plt
-import json
 
 from cli_utils import CollectionType
 from data_collections import Collection, CACM
@@ -78,15 +77,12 @@ def plot():
         for recall in int_precisions[1].keys()
     ]
 
-    click.echo(json.dumps(precisions[2], indent=2, separators=(",", ": ")))
-    click.echo(json.dumps(int_precisions[2], indent=2, separators=(",", ": ")))
-    click.echo(json.dumps(avg_int_precisions, indent=2, separators=(",", ": ")))
-
     plt.plot(
         [i["recall"] for i in avg_int_precisions],
         [i["precision"] for i in avg_int_precisions],
     )
-    plt.legend()
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
     plt.show()
 
 
