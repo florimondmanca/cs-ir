@@ -49,7 +49,7 @@ def plot():
     precisions = []
     recalls = []
 
-    for k in range(1, 31):
+    for k in range(1, 51):
         found: dict = {
             query_id: set(vector_search(query, index, k=k))
             for query_id, query in queries.items()
@@ -59,8 +59,8 @@ def plot():
         precisions.append(precision)
         recalls.append(recall)
 
-    plt.plot(precisions, recalls, label="precision")
-    plt.plot(recalls, precisions, label="recall")
+    plt.plot(precisions, recalls, label="recall")
+    plt.plot(recalls, precisions, label="precision")
     plt.legend()
     plt.show()
 
