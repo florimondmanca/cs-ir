@@ -1,6 +1,6 @@
 # CS-IR
 
-This repository is home to the code for an _Information Retrieval_ (IR) course project.
+This repository is home to the code for an _Information Retrieval_ (IR) course project at CentraleSupélec.
 
 ## Goal
 
@@ -32,13 +32,15 @@ pip install -r requirements.txt
 
 ## Usage
 
-Note: make sure you are running within the virtual environment. You can activate it using:
+> **IMPORTANT**: the following shows usage from the command line. A Jupyter notebook with pre-computed results is also available.
+
+Make sure you are running within the virtual environment. You can activate it using:
 
 ```bash
 pipenv shell
 ```
 
-Notations: in the following `<COLLECTION>` refers to either `CACM` or `CS276`.
+In the following `<COLLECTION>` refers to either `CACM` or `CS276`.
 
 ### Collection inspection
 
@@ -66,13 +68,13 @@ python -m indexes size <COLLECTION>
 
 ### Boolean requests
 
-To make a boolean request for `algorithm | artifical` against a collection, use:
+To make a boolean request against a collection, use:
 
 ```bash
 python -m models.boolean <COLLECTION> <QUERY>
 ```
 
-Example:
+Example (find all documents containing the word "algorithm"):
 
 ```bash
 python -m models.boolean CACM "Q('algorithm')"
@@ -154,9 +156,25 @@ F-measure and E-measure for the CACM collection:
 $ python -m evaluation fe
 ```
 
+Complete usage:
+
+```bash
+$ python -m evaluation --help
+Usage: __main__.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  fe         Show the F- and E-measure on the CACM...
+  plot       Plot the precision-recall curve for the CACM...
+  rprec      Compute the R-precision for queries on the...
+  showperfs
+```
+
 ## Credits
 
-Made by Alexandre de Boutray & Florimond Manca.
+Alexandre de Boutray & Florimond Manca, 2019.
 
 [python]: https://www.python.org
 [pipenv]: https://pipenv.readthedocs.io
