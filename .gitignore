@@ -22,3 +22,6 @@ output
 # Temp dirs and results
 results/
 tmp/
+
+# Jupyter
+.ipynb_checkpoints/
