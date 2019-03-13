@@ -122,7 +122,7 @@ def fe():
         query_id: set(vector_search(query, index, k=10))
         for query_id, query in queries.items()
     }
-    precision, recall = precision_recall(found, answers)
+    precision, recall = map(lambda l: sum(l)/len(l), zip(*[precision_recall(found.get(i), answers.get(i)) for i in answers.keys()]))
     click.echo(f"Precision: {precision}")
     click.echo(f"Recall: {recall}")
 
