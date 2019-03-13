@@ -8,8 +8,6 @@ from cli_utils import CollectionType
 from data_collections import Collection
 from heaps import estimate, create_heaps
 
-from evaluation.cli import cli as eval_cli
-
 load_dotenv()
 
 
@@ -84,9 +82,6 @@ def cli(ctx: click.Context, collection: Collection):
     ax2.loglog(r, f)
 
     plt.show()
-
-    # Evaluation
-    ctx.invoke(eval_cli.get_command("showperfs"), collection=collection)
 
 
 if __name__ == "__main__":
