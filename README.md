@@ -18,10 +18,16 @@ DATA_CACM_QRELS=path/to/qrels.text
 DATA_CS276_PATH=/path/to/pa1-data
 ```
 
-- Get [Python] 3.6+ and [Pipenv] and install dependencies:
+- Get [Python] 3.7+ and [Pipenv] (`pip install pipenv`) and install dependencies:
 
 ```bash
 pipenv install
+```
+
+- Alternatively, install from `requirements.txt`, preferably in a virtualenv:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Usage

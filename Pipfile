@@ -8,6 +8,7 @@ matplotlib = "*"
 python-dotenv = "*"
 click = "*"
 simpleeval = "*"
+jupyter = "*"
 
 [dev-packages]
 pytest = "*"
